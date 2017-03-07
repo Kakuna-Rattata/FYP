@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
      * the list of names of objects, pre-sorted by starting with the nearest ones. */
     static {
         Map<String, List<String>> itemsByBeacons = new HashMap<>();
-        itemsByBeacons.put("18129:1432", itemArrayList = new ArrayList<String>() {{
+        itemsByBeacons.put("18129:1432", new ArrayList<String>() {{
             add("Pastel Heels");
             // "Pastel Heels" is closest to the beacon with major 18129 and minor 1432
             add("Black Boots");
