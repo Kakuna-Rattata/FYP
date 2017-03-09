@@ -6,6 +6,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 
 import com.estimote.sdk.Beacon;
 import com.estimote.sdk.BeaconManager;
@@ -27,32 +28,31 @@ import java.util.UUID;
 public class MyApplication extends Application {
 
     private BeaconManager beaconManager;
-    private Region regionAll;
+
     long scanDurInterval = 5000;
     long scanWaitInterval = 5000;
 
+    /*  iBeacon Ranging :   */
+    final Region regionAll = new Region(
+            "All beacons",
+            UUID.fromString("B9407F30-F5F8-466E-AFF9-25556B57FE6D"),
+            null, null);    //  Target entire groups of beacons by setting the major and/or minor to null.
+    final  Region regionCandy = new Region(
+            "Candy beacon",
+            UUID.fromString("B9407F30-F5F8-466E-AFF9-25556B57FE6D"),
+            17236, 25458);  // iBeacon format Major, minor values
 
     @Override
     public void onCreate() {
         super.onCreate();
 
+        /*  Firebase database setup : */
         if(!FirebaseApp.getApps(this).isEmpty()) {
 
             FirebaseDatabase.getInstance().setPersistenceEnabled(true);
         }
 
-        /*  Beacon Ranging :
-         */
-        regionAll = new Region("ranged region",
-                UUID.fromString("B9407F30-F5F8-466E-AFF9-25556B57FE6D"),
-                null,   // Major and Minor values null to target all beacons
-                null);
-
-
-
-        /*  Beacon Monitoring :
-         */
-
+        /*  iBeacon Monitoring :    */
         beaconManager = new BeaconManager(getApplicationContext());
         beaconManager.setBackgroundScanPeriod(scanDurInterval, scanWaitInterval);   // Set enter/exit event trigger duration and wait time to 5 seconds
 
@@ -60,32 +60,48 @@ public class MyApplication extends Application {
         beaconManager.connect(new BeaconManager.ServiceReadyCallback() {
             @Override
             public void onServiceReady() {
-                beaconManager.startMonitoring(new Region(
-                        "monitored region",
-                        UUID.fromString("B9407F30-F5F8-466E-AFF9-25556B57FE6D"),    // Estimote 'Beetroot' Beacon Unique ID
-                        18129,  // iBeacon format Major value
-                        1432    //  Minor value
-                        //  Target entire groups of beacons by setting the major and/or minor to null.
-                ));
+                beaconManager.startMonitoring(regionAll);
+                beaconManager.startMonitoring(regionCandy);
             }
         });
 
         beaconManager.setMonitoringListener(new BeaconManager.MonitoringListener() {
             @Override
             public void onEnteredRegion(Region region, List<Beacon> list) {
-                showNotification(
-                        "Welcome to the store", // Title
-                        "Check out the latest app-only instore offers."  // Message
-                );
+
+                if (region == regionAll) {
+                    showNotification(
+                            "Welcome to the store", // Title
+                            "Check out the latest app-only instore offers.",  // Message
+                            MainActivity.class
+                    );
+
+                    Log.d("monitoring: enter", region.toString());
+                }
+                else if (region == regionCandy) {
+                    showNotification(
+                            "Exclusive deals on footwear!", // Title
+                            "Select to view - here only!",   // Message
+                            ItemListActivity.class
+                    );
+
+                    Log.d("monitoring: enter", region.toString());
+                }
             }
 
             @Override
             public void onExitedRegion(Region region) {
-                showNotification(
-                        "Thank you for shopping with us",
-                        "Check back soon for the latest " +
-                                "app instore discounts"
-                );
+
+                if (region == regionAll) {
+                    showNotification(
+                            "Thank you for shopping with us",
+                            "Check back soon for the latest " +
+                                    "app instore discounts",
+                            MainActivity.class
+                    );
+
+                    Log.d("monitoring: exit", region.toString());
+                }
             }
         });
 
@@ -93,12 +109,11 @@ public class MyApplication extends Application {
 
     /* Add a notification to show up whenever
      * user enters the range of our monitored beacon. */
-    public void showNotification(String title, String message) {
+    public void showNotification(String title, String message, Class intentActivityClass) {
 
-        Intent notifyIntent = new Intent(this, MainActivity.class);
-        notifyIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-
-        PendingIntent pendingIntent = PendingIntent.getActivities(this, 0, new Intent[] {notifyIntent}, PendingIntent.FLAG_UPDATE_CURRENT);
+        Intent notificationIntent = new Intent(this, intentActivityClass);
+        notificationIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        PendingIntent pendingIntent = PendingIntent.getActivities(this, 0, new Intent[] {notificationIntent}, PendingIntent.FLAG_UPDATE_CURRENT);
 
         Notification notification = new Notification.Builder(this)
                 .setSmallIcon(android.R.drawable.ic_dialog_info)
