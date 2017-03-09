@@ -17,6 +17,19 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES.txt'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/notice.txt'
+        exclude 'META-INF/license.txt'
+        exclude 'META-INF/dependencies.txt'
+        exclude 'META-INF/LGPL2.1'
+    }
 }
 
 dependencies {
@@ -24,11 +37,23 @@ dependencies {
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    compile 'com.android.support:appcompat-v7:25.1.1'
-    testCompile 'junit:junit:4.12'
 
     // Replace sdk version with the latest version
     // of Estimote Android SDK; you'll find the latest version number on:
     //   https://github.com/Estimote/Android-SDK/releases
+
+    // Below dependencies required for Firebase :
+    compile 'com.android.support:appcompat-v7:25.1.1'
     compile 'com.estimote:sdk:0.16.0@aar'
+    compile 'com.android.support:design:25.1.1'
+    compile 'com.google.android.gms:play-services-auth:10.2.0'
+
+    compile 'com.google.firebase:firebase-core:10.2.0'
+    compile 'com.google.firebase:firebase-auth:10.2.0'
+    compile 'com.google.firebase:firebase-database:10.2.0'
+    compile 'com.firebase:firebase-client-android:2.3.1'
+    compile 'com.firebaseui:firebase-ui-database:0.4.0'
+
+    testCompile 'junit:junit:4.12'
 }
+apply plugin: 'com.google.gms.google-services'

@@ -1,0 +1,59 @@
+{
+  "project_info": {
+    "project_number": "610967754926",
+    "firebase_url": "https://beacon-fyp-project.firebaseio.com",
+    "project_id": "beacon-fyp-project",
+    "storage_bucket": "beacon-fyp-project.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:610967754926:android:0062cca5d34667d4",
+        "android_client_info": {
+          "package_name": "com.n0499010.fypbeacon"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "610967754926-vqojraepdjotbue0bpbk0khshs915d83.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.n0499010.fypbeacon",
+            "certificate_hash": "632db5416971d85fbbb3f333ce5cfc474c71f830"
+          }
+        },
+        {
+          "client_id": "610967754926-06hmuh1udmuk7peeo4dshgncr7g0v2uq.apps.googleusercontent.com",
+          "client_type": 3
+        },
+        {
+          "client_id": "610967754926-gvg64jr3i377145vl99csosbr63aqt1t.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCHEtp8EeiVnaR5p2HYK1OPJzCjaexEyBc"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "610967754926-06hmuh1udmuk7peeo4dshgncr7g0v2uq.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

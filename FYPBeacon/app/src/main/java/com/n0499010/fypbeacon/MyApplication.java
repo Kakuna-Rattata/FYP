@@ -10,6 +10,8 @@ import android.content.Intent;
 import com.estimote.sdk.Beacon;
 import com.estimote.sdk.BeaconManager;
 import com.estimote.sdk.Region;
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.List;
 import java.util.UUID;
@@ -25,12 +27,31 @@ import java.util.UUID;
 public class MyApplication extends Application {
 
     private BeaconManager beaconManager;
+    private Region regionAll;
     long scanDurInterval = 5000;
     long scanWaitInterval = 5000;
+
 
     @Override
     public void onCreate() {
         super.onCreate();
+
+        if(!FirebaseApp.getApps(this).isEmpty()) {
+
+            FirebaseDatabase.getInstance().setPersistenceEnabled(true);
+        }
+
+        /*  Beacon Ranging :
+         */
+        regionAll = new Region("ranged region",
+                UUID.fromString("B9407F30-F5F8-466E-AFF9-25556B57FE6D"),
+                null,   // Major and Minor values null to target all beacons
+                null);
+
+
+
+        /*  Beacon Monitoring :
+         */
 
         beaconManager = new BeaconManager(getApplicationContext());
         beaconManager.setBackgroundScanPeriod(scanDurInterval, scanWaitInterval);   // Set enter/exit event trigger duration and wait time to 5 seconds
@@ -67,6 +88,7 @@ public class MyApplication extends Application {
                 );
             }
         });
+
     }
 
     /* Add a notification to show up whenever
@@ -90,4 +112,5 @@ public class MyApplication extends Application {
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.notify(1, notification);
     }
+
 }
