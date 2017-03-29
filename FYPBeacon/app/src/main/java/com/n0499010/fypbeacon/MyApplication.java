@@ -10,12 +10,21 @@ import android.util.Log;
 
 import com.estimote.sdk.Beacon;
 import com.estimote.sdk.BeaconManager;
+import com.estimote.sdk.EstimoteSDK;
 import com.estimote.sdk.Region;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.List;
-import java.util.UUID;
+
+import static com.n0499010.fypbeacon.Global.beaconManager;
+import static com.n0499010.fypbeacon.Global.getActivity;
+import static com.n0499010.fypbeacon.Global.regionAll;
+import static com.n0499010.fypbeacon.Global.regionBeetroot;
+import static com.n0499010.fypbeacon.Global.regionCandy;
+import static com.n0499010.fypbeacon.Global.regionLemon;
+import static com.n0499010.fypbeacon.Global.scanDurInterval;
+import static com.n0499010.fypbeacon.Global.scanWaitInterval;
 
 /**
  * Created by N0499010 Shannon Hibbett on 06/03/2017
@@ -27,30 +36,18 @@ import java.util.UUID;
 *  Required for managing Beacons from any Activity in the app. */
 public class MyApplication extends Application {
 
-    private BeaconManager beaconManager;
-
-    long scanDurInterval = 5000;
-    long scanWaitInterval = 5000;
-
-    /*  iBeacon Ranging :   */
-    final Region regionAll = new Region(
-            "All beacons",
-            UUID.fromString("B9407F30-F5F8-466E-AFF9-25556B57FE6D"),
-            null, null);    //  Target entire groups of beacons by setting the major and/or minor to null.
-    final  Region regionCandy = new Region(
-            "Candy beacon",
-            UUID.fromString("B9407F30-F5F8-466E-AFF9-25556B57FE6D"),
-            17236, 25458);  // iBeacon format Major, minor values
+    private String beaconKey;
 
     @Override
     public void onCreate() {
         super.onCreate();
 
         /*  Firebase database setup : */
-        if(!FirebaseApp.getApps(this).isEmpty()) {
+        if(!FirebaseApp.getApps(this).isEmpty()) { FirebaseDatabase.getInstance().setPersistenceEnabled(true); }
 
-            FirebaseDatabase.getInstance().setPersistenceEnabled(true);
-        }
+        /* Estimote SDK Initialization : */
+        EstimoteSDK.initialize(getApplicationContext(), Global.appID, Global.appToken);
+        EstimoteSDK.enableDebugLogging(true);   // Optional, debug logging.
 
         /*  iBeacon Monitoring :    */
         beaconManager = new BeaconManager(getApplicationContext());
@@ -61,7 +58,6 @@ public class MyApplication extends Application {
             @Override
             public void onServiceReady() {
                 beaconManager.startMonitoring(regionAll);
-                beaconManager.startMonitoring(regionCandy);
             }
         });
 
@@ -69,28 +65,48 @@ public class MyApplication extends Application {
             @Override
             public void onEnteredRegion(Region region, List<Beacon> list) {
 
+                Log.d("monitoring: enter", region.toString());
+                Log.d("region identifier", region.getIdentifier());
+
+                //  Get beacon's MajorMinor key
+                beaconKey = String.format("%d:%d", region.getMajor(), region.getMinor());
+
                 if (region == regionAll) {
                     showNotification(
-                            "Welcome to the store", // Title
-                            "Check out the latest app-only instore offers.",  // Message
-                            MainActivity.class
+                            "Welcome to the store",                             // Title
+                            "Check out the latest app-only instore offers.",    // Message
+
+                            MainActivity.class                                  // Context
                     );
 
-                    Log.d("monitoring: enter", region.toString());
-                }
-                else if (region == regionCandy) {
-                    showNotification(
-                            "Exclusive deals on footwear!", // Title
-                            "Select to view - here only!",   // Message
-                            ItemListActivity.class
-                    );
+                    beaconManager.startMonitoring(regionBeetroot);
+                    beaconManager.startMonitoring(regionLemon);
+                    beaconManager.startMonitoring(regionCandy);
 
-                    Log.d("monitoring: enter", region.toString());
+                } else {
+                    //  Trigger Overview Info Activity, provide region's beacon MM key
+                    Intent triggerIntent = new Intent(getApplicationContext(), OverviewActivity.class);
+                    triggerIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    triggerIntent.putExtra("beaconKey", beaconKey);
+
+                    if (getActivity() != null) { startActivity(triggerIntent); }
+                    else {
+                        if (region == regionCandy) {
+                            showNotification(
+                                    "Exclusive deals on footwear!",
+                                    "Select to view - here only!",
+                                    ItemListActivity.class
+                            );
+                        }
+                    }
+
+
                 }
-            }
+            }   //!OnEnteredRegion
 
             @Override
             public void onExitedRegion(Region region) {
+                Log.d("monitoring: exit", region.toString());
 
                 if (region == regionAll) {
                     showNotification(
@@ -99,16 +115,13 @@ public class MyApplication extends Application {
                                     "app instore discounts",
                             MainActivity.class
                     );
-
-                    Log.d("monitoring: exit", region.toString());
                 }
             }
-        });
-
+        }); //!setMonitoringListener
     }
 
-    /* Add a notification to show up whenever
-     * user enters the range of our monitored beacon. */
+    //TODO: Use either this or Global method
+    /* Add a notification to show up whenever user enters the range of monitored beacon */
     public void showNotification(String title, String message, Class intentActivityClass) {
 
         Intent notificationIntent = new Intent(this, intentActivityClass);
