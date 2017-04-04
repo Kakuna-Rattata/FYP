@@ -44,6 +44,7 @@ import static com.n0499010.fypbeacon.Global.mGoogleApiClient;
 import static com.n0499010.fypbeacon.Global.mPhotoUrl;
 import static com.n0499010.fypbeacon.Global.mSharedPreferences;
 import static com.n0499010.fypbeacon.Global.mUid;
+import static com.n0499010.fypbeacon.Global.mUser;
 import static com.n0499010.fypbeacon.Global.mUsername;
 import static com.n0499010.fypbeacon.Global.userRef;
 import static com.n0499010.fypbeacon.MyApplication.regionAll;
@@ -208,14 +209,14 @@ public class MainActivity extends AppCompatActivity
     public void initialiseAccount(String userId) {
         //TODO: initAcc method
 
-        final User user = new User();
-        user.setuID(userId);
+        //final User user = new User();
+        mUser.setuID(userId);
 
         // Read database, lookup Uid to see if already exists :
         userRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.hasChild(user.getuID())) {
+                if (dataSnapshot.hasChild(mUser.getuID())) {
                     // if Uid already exists, add 'OF_Return' offer:
 
                     // add as key under user's 'offer's node, set value to 'true'
@@ -223,7 +224,7 @@ public class MainActivity extends AppCompatActivity
                     userData.put("OF_Return", "true");
 
                     DatabaseReference mUserRef = userRef;
-                    mUserRef = userRef.child(user.getuID()).child("offers");
+                    mUserRef = userRef.child(mUser.getuID()).child("offers");
                     mUserRef.child("OF_Return").setValue("true");
                     //mUserRef.setValue(userData);
                 } else {
@@ -234,7 +235,7 @@ public class MainActivity extends AppCompatActivity
 
                     DatabaseReference mUserRef = userRef;
                     // Add new UID, under Uid node, add 'offers' node
-                    mUserRef = userRef.child(user.getuID()).child("offers");
+                    mUserRef = userRef.child(mUser.getuID()).child("offers");
                     // Add new offer under offers node: Key: OF_Welcome, value "true"
                     mUserRef.setValue(userData);
                 }

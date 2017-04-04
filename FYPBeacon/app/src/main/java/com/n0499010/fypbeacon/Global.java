@@ -59,6 +59,9 @@ public class Global {
 
     public static GoogleApiClient mGoogleApiClient;
 
+    public static Map<String,Offer> offers;
+
+    public static User mUser = new User();
 
     /*  Estimote API :   */
     public static final String appID = "fyp-beacon-app-koo";

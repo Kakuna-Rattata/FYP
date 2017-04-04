@@ -13,14 +13,22 @@ import com.estimote.sdk.BeaconManager;
 import com.estimote.sdk.EstimoteSDK;
 import com.estimote.sdk.Region;
 import com.google.firebase.FirebaseApp;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static com.n0499010.fypbeacon.Global.getActivity;
+import static com.n0499010.fypbeacon.Global.mUser;
 import static com.n0499010.fypbeacon.Global.scanDurInterval;
 import static com.n0499010.fypbeacon.Global.scanWaitInterval;
+import static com.n0499010.fypbeacon.Global.userRef;
 
 /**
  * Created by N0499010 Shannon Hibbett on 06/03/2017
@@ -119,12 +127,14 @@ public class MyApplication extends Application {
 
                             MainActivity.class                                  // Context
                     );
-
                     beaconManager.startMonitoring(regionBeetroot);
                     beaconManager.startMonitoring(regionLemon);
                     beaconManager.startMonitoring(regionCandy);
 
                 } else {
+                    // Record user's beacon visit in database :
+                    recordBeaconVisit(beaconKey);
+
                     //  Trigger Overview Activity
                     Intent overviewIntent = new Intent(getApplicationContext(), OverviewActivity.class);
                     overviewIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -208,6 +218,36 @@ public class MyApplication extends Application {
 //            }
 //        });
 //    }
+
+    public void recordBeaconVisit(String key) {
+
+        final String bKey = key;
+        // Record user's beacon visit in database :
+        final DatabaseReference mUserRef = userRef.child(mUser.getuID());
+
+        mUserRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+
+                DatabaseReference mBeaconVisitRef = mUserRef.child("beaconVisited");
+                mBeaconVisitRef.child(bKey);
+
+                //mUserRef.child("beaconVisited").child(bKey);
+
+                Map<String,String> beaconVisitedData = new HashMap<String, String>();
+                beaconVisitedData.put("noVisits", "1");
+                beaconVisitedData.put("timeSpent", "2 mins");
+
+                mBeaconVisitRef.child(bKey).setValue(beaconVisitedData);
+                //mUserRef.child(bKey).setValue(beaconVisitedData);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
 
     //TODO: Use either this or Global method
     /* Add a notification to show up whenever user enters the range of monitored beacon */
