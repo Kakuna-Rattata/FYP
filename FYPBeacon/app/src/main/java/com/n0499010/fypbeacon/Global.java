@@ -6,8 +6,10 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 
 import com.estimote.sdk.Beacon;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
@@ -32,6 +34,7 @@ import java.util.Map;
 public class Global {
 
     /*  App Values for Global Access :  */
+    public static SharedPreferences mSharedPreferences;
 
     /*  Firebase Database : */
     public static final String FIREBASE_URL = "https://beacon-fyp-project.firebaseio.com/";
@@ -40,13 +43,22 @@ public class Global {
     public static final DatabaseReference firebaseRootRef = FirebaseDatabase.getInstance().getReferenceFromUrl(FIREBASE_URL);
     public static final DatabaseReference itemRef = firebaseRootRef.child("item");
     public static final DatabaseReference beaconRef = firebaseRootRef.child("beacon");
+    public static final DatabaseReference userRef = firebaseRootRef.child("user");
 
     public static final FirebaseStorage storageInstance = FirebaseStorage.getInstance();
 //    public static final StorageReference imageRootRef = storageInstance.getReference();
 //    public static final StorageReference retailImageRef = imageRootRef.child("Retail_images");
 
-    private FirebaseAuth mFirebaseAuth;
-    private FirebaseUser mFirebaseUser;
+    public static FirebaseAuth mFirebaseAuth;
+    public static FirebaseUser mFirebaseUser;
+
+    public static String mUid;
+    public static String mUsername;
+    public static final String ANONYMOUS = "anonymous";
+    public static String mPhotoUrl;
+
+    public static GoogleApiClient mGoogleApiClient;
+
 
     /*  Estimote API :   */
     public static final String appID = "fyp-beacon-app-koo";

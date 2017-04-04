@@ -61,6 +61,31 @@ public class MyApplication extends Application {
         /*  Firebase database setup : */
         if(!FirebaseApp.getApps(this).isEmpty()) { FirebaseDatabase.getInstance().setPersistenceEnabled(true); }
 
+
+//        mUsername = ANONYMOUS;
+//
+//        // Initialize Firebase Auth
+//        mFirebaseAuth = FirebaseAuth.getInstance();
+//        mFirebaseUser = mFirebaseAuth.getCurrentUser();
+//        if (mFirebaseUser == null) {
+//            // Not signed in, launch the Sign In activity
+//            startActivity(new Intent(this, SignInActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+//            //finish();
+//            return;
+//        } else {
+//            // user authenticated
+//            mUid = mFirebaseUser.getUid();
+//            mUsername = mFirebaseUser.getDisplayName();
+//            if (mFirebaseUser.getPhotoUrl() != null) {
+//                mPhotoUrl = mFirebaseUser.getPhotoUrl().toString();
+//            }
+//
+//            //TODO: Call initialiseApp method
+//
+//            //TODO: Call initialiseAccount method
+//            initialiseAccount(mUid);
+//        }
+
         /* Estimote SDK Initialization : */
         EstimoteSDK.initialize(getApplicationContext(), Global.appID, Global.appToken);
         EstimoteSDK.enableDebugLogging(true);   // Optional, debug logging.
@@ -140,6 +165,50 @@ public class MyApplication extends Application {
         }); //!setMonitoringListener
     }
 
+//    public void initialiseApp() {
+//        //TODO: initApp method
+//
+//        // Create offer objects from database
+//    }
+//
+//    public void initialiseAccount(String userId) {
+//        //TODO: initAcc method
+//
+//        final User user = new User();
+//        user.setuID(userId);
+//
+//        // Read database, lookup Uid to see if already exists :
+//        userRef.addListenerForSingleValueEvent(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(DataSnapshot dataSnapshot) {
+//                if (dataSnapshot.hasChild(user.getuID())) {
+//                    // if Uid already exists, add 'OF_Return' offer:
+//
+//                    // add as key under user's 'offer's node, set value to 'true'
+//                    Map<String,String> userData = new HashMap<String, String>();
+//                    userData.put("OF_Return", "true");
+//
+//                    userRef.setValue(userData);
+//                } else {
+//                    // if Uid not present, write value to db as new key under 'user' as root node
+//                    Map<String,String> userData = new HashMap<String, String>();
+//                    //TODO: get offers from database, save to global offer list on sign-in
+//                    userData.put("OF_Welcome", "true");
+//
+//                    // Add new UID, under Uid node, add 'offers' node
+//                    userRef = userRef.child(user.getuID()).child("offers");
+//                    // Add new offer under offers node: Key: OF_Welcome, value "true"
+//                    userRef.setValue(userData);
+//                }
+//            }
+//
+//            @Override
+//            public void onCancelled(DatabaseError databaseError) {
+//
+//            }
+//        });
+//    }
+
     //TODO: Use either this or Global method
     /* Add a notification to show up whenever user enters the range of monitored beacon */
     public void showNotification(String title, String message, Class intentActivityClass) {
@@ -160,5 +229,4 @@ public class MyApplication extends Application {
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.notify(1, notification);
     }
-
 }
