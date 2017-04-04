@@ -8,22 +8,22 @@ import android.content.Context;
 import android.content.Intent;
 
 import com.estimote.sdk.Beacon;
-import com.estimote.sdk.BeaconManager;
-import com.estimote.sdk.Region;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * Created by Shannon Hibbett (N0499010) on 29/03/2017.
  *
- * Code developed during previous Mobile Platform Development module assignment reused:
+ * Some code developed during previous Mobile Platform Development module assignment has been reused:
  * showNotification method, getActivity method
  *
  * TODO: find & cite getActivity method source
@@ -35,39 +35,25 @@ public class Global {
 
     /*  Firebase Database : */
     public static final String FIREBASE_URL = "https://beacon-fyp-project.firebaseio.com/";
+    public static final String STORAGE_RETAIL = "Retail_images";
 
     public static final DatabaseReference firebaseRootRef = FirebaseDatabase.getInstance().getReferenceFromUrl(FIREBASE_URL);
     public static final DatabaseReference itemRef = firebaseRootRef.child("item");
     public static final DatabaseReference beaconRef = firebaseRootRef.child("beacon");
 
+    public static final FirebaseStorage storageInstance = FirebaseStorage.getInstance();
+//    public static final StorageReference imageRootRef = storageInstance.getReference();
+//    public static final StorageReference retailImageRef = imageRootRef.child("Retail_images");
+
+    private FirebaseAuth mFirebaseAuth;
+    private FirebaseUser mFirebaseUser;
+
     /*  Estimote API :   */
     public static final String appID = "fyp-beacon-app-koo";
     public static final String appToken = "0e25759a226c115f659245992c0b97ee";
 
-    public static BeaconManager beaconManager;
-
     public static long scanDurInterval = 5000;
     public static long scanWaitInterval = 3000;
-
-
-    /*  Estimote Region definitions for iBeacon Ranging :   */
-    static final Region regionAll = new Region(
-            "All beacons",
-            UUID.fromString("B9407F30-F5F8-466E-AFF9-25556B57FE6D"),
-            null, null);    //  Target entire groups of beacons by setting the major and/or minor to null.
-    static final Region regionBeetroot = new Region(
-            "Beetroot beacon",
-            UUID.fromString("B9407F30-F5F8-466E-AFF9-25556B57FE6D"),
-            18129, 1432);
-    static final Region regionLemon = new Region(
-            "Lemon beacon",
-            UUID.fromString("B9407F30-F5F8-466E-AFF9-25556B57FE6D"),
-            28651, 37405);  // iBeacon format Major, minor values to identify particular beacon
-    static final Region regionCandy = new Region(
-            "Candy beacon",
-            UUID.fromString("B9407F30-F5F8-466E-AFF9-25556B57FE6D"),
-            17236, 25458);
-
 
 
     public static Intent notifyIntent;

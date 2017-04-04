@@ -16,13 +16,9 @@ import com.google.firebase.FirebaseApp;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.List;
+import java.util.UUID;
 
-import static com.n0499010.fypbeacon.Global.beaconManager;
 import static com.n0499010.fypbeacon.Global.getActivity;
-import static com.n0499010.fypbeacon.Global.regionAll;
-import static com.n0499010.fypbeacon.Global.regionBeetroot;
-import static com.n0499010.fypbeacon.Global.regionCandy;
-import static com.n0499010.fypbeacon.Global.regionLemon;
 import static com.n0499010.fypbeacon.Global.scanDurInterval;
 import static com.n0499010.fypbeacon.Global.scanWaitInterval;
 
@@ -38,6 +34,26 @@ public class MyApplication extends Application {
 
     private String beaconKey;
 
+    public static BeaconManager beaconManager;
+
+    /*  Estimote Region definitions for iBeacon Ranging :   */
+    static final Region regionAll = new Region(
+            "All beacons",
+            UUID.fromString("B9407F30-F5F8-466E-AFF9-25556B57FE6D"),
+            null, null);    //  Target entire groups of beacons by setting the major and/or minor to null.
+    static final Region regionBeetroot = new Region(
+            "Beetroot beacon",
+            UUID.fromString("B9407F30-F5F8-466E-AFF9-25556B57FE6D"),
+            18129, 1432);
+    static final Region regionLemon = new Region(
+            "Lemon beacon",
+            UUID.fromString("B9407F30-F5F8-466E-AFF9-25556B57FE6D"),
+            28651, 37405);  // iBeacon format Major, minor values to identify particular beacon
+    static final Region regionCandy = new Region(
+            "Candy beacon",
+            UUID.fromString("B9407F30-F5F8-466E-AFF9-25556B57FE6D"),
+            17236, 25458);
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -51,9 +67,8 @@ public class MyApplication extends Application {
 
         /*  iBeacon Monitoring :    */
         beaconManager = new BeaconManager(getApplicationContext());
-        beaconManager.setBackgroundScanPeriod(scanDurInterval, scanWaitInterval);   // Set enter/exit event trigger duration and wait time to 5 seconds
+        beaconManager.setBackgroundScanPeriod(scanDurInterval, scanWaitInterval);
 
-        // Create a beacon region defining monitoring geofence :
         beaconManager.connect(new BeaconManager.ServiceReadyCallback() {
             @Override
             public void onServiceReady() {
@@ -72,6 +87,7 @@ public class MyApplication extends Application {
                 beaconKey = String.format("%d:%d", region.getMajor(), region.getMinor());
 
                 if (region == regionAll) {
+                    // Display welcome notiiication when discovering any beacon :
                     showNotification(
                             "Welcome to the store",                             // Title
                             "Check out the latest app-only instore offers.",    // Message
@@ -84,23 +100,27 @@ public class MyApplication extends Application {
                     beaconManager.startMonitoring(regionCandy);
 
                 } else {
-                    //  Trigger Overview Info Activity, provide region's beacon MM key
-                    Intent triggerIntent = new Intent(getApplicationContext(), OverviewActivity.class);
-                    triggerIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    triggerIntent.putExtra("beaconKey", beaconKey);
+                    //  Trigger Overview Activity
+                    Intent overviewIntent = new Intent(getApplicationContext(), OverviewActivity.class);
+                    overviewIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    //  Provide region's beacon Major:Minor key
+                    overviewIntent.putExtra("beaconKey", beaconKey);
 
-                    if (getActivity() != null) { startActivity(triggerIntent); }
-                    else {
+                    //  If app open in foreground, but not on Overview, launch new Overview Activity on top :
+                    if (getActivity() != null && getActivity().getClass() != OverviewActivity.class) {
+
+                        startActivity(overviewIntent);
+
+                    } else {
+
                         if (region == regionCandy) {
                             showNotification(
                                     "Exclusive deals on footwear!",
                                     "Select to view - here only!",
-                                    ItemListActivity.class
+                                    ItemListActivity.class      //TODO: Deal page
                             );
                         }
                     }
-
-
                 }
             }   //!OnEnteredRegion
 

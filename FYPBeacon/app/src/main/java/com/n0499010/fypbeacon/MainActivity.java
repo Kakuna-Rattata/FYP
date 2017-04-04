@@ -23,9 +23,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.n0499010.fypbeacon.Global.beaconManager;
 import static com.n0499010.fypbeacon.Global.itemRef;
-import static com.n0499010.fypbeacon.Global.regionAll;
+import static com.n0499010.fypbeacon.MyApplication.regionAll;
+
+//import static com.n0499010.fypbeacon.Global.beaconManager;
+//import static com.n0499010.fypbeacon.Global.regionAll;
+//import static com.n0499010.fypbeacon.MyApplication.beaconManager;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -37,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
     private Button button;
 
     //  Declare Estimote SDK Beacon elements:
+    public static BeaconManager beaconManager;
     private String scanId;
 
     private static final Map<String, List<String>> PLACES_BY_BEACONS;
@@ -100,6 +104,8 @@ public class MainActivity extends AppCompatActivity {
         };
 
         mListView.setAdapter(firebaseListAdapter);
+
+        beaconManager = new BeaconManager(getApplicationContext());
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
