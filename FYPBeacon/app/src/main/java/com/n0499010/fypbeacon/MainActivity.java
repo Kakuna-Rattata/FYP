@@ -186,12 +186,14 @@ public class MainActivity extends AppCompatActivity
             finish();
             return;
         } else {
-            // user authenticated
+            // User authenticated
             mUid = mFirebaseUser.getUid();
             mUsername = mFirebaseUser.getDisplayName();
             if (mFirebaseUser.getPhotoUrl() != null) {
                 mPhotoUrl = mFirebaseUser.getPhotoUrl().toString();
             }
+
+            mSharedPreferences.edit().putBoolean("authenticated", true).apply();
 
             //TODO: Call initialiseApp method
 

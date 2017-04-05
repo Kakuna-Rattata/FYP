@@ -11,20 +11,34 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.n0499010.fypbeacon.OverviewActivity">
 
+    <android.support.design.widget.CoordinatorLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true">
+
+        <android.support.design.widget.FloatingActionButton
+            android:layout_width="55dp"
+            android:layout_height="53dp"
+            android:clickable="true"
+            app:fabSize="mini"
+            app:srcCompat="@android:drawable/btn_star"
+            android:layout_gravity="bottom|end"
+            android:id="@+id/fab_wishlist" />
+    </android.support.design.widget.CoordinatorLayout>
+
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:weightSum="1"
         android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true"
-        android:weightSum="1">
+        android:layout_alignParentStart="true">
 
         <ImageView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:srcCompat="@mipmap/ic_launcher"
             android:id="@+id/imageView_overview"
-            android:layout_weight="0.25" />
+            android:layout_weight="0.39" />
 
         <Space
             android:layout_width="match_parent"
@@ -32,12 +46,12 @@
             android:layout_weight="0.05" />
 
         <TextView
-            android:text="Title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/textView_title"
-            android:layout_weight="0.03"
-            android:textSize="30sp" />
+            android:layout_weight="0.10"
+            android:padding="10dp"
+            android:textSize="36sp" />
 
         <Space
             android:layout_width="match_parent"
@@ -45,11 +59,37 @@
             android:layout_weight="0.04" />
 
         <TextView
-            android:text="Description"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/textView_desc"
-            android:layout_weight="0.25"
-            android:textSize="18sp" />
+            android:layout_weight="0.13"
+            android:padding="10dp"
+            android:textSize="24sp" />
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="71dp">
+
+            <Space
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:id="@+id/textView_price"
+                android:layout_weight="1"
+                android:textSize="36sp" />
+
+            <Space
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.4" />
+
+        </LinearLayout>
+
     </LinearLayout>
+
 </RelativeLayout>
