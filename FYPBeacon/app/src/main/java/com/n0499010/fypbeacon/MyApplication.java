@@ -43,6 +43,10 @@ public class MyApplication extends Application {
     private static final String TAG = "MyApplication";
     private String beaconKey;
 
+    private long tStart = 0;
+    private long tEnd = 0;
+    private double elapsedSeconds = 0;
+
     public static BeaconManager beaconManager;
 
     /*  Estimote Region definitions for iBeacon Ranging :   */
@@ -62,6 +66,13 @@ public class MyApplication extends Application {
             "Candy beacon",
             UUID.fromString("B9407F30-F5F8-466E-AFF9-25556B57FE6D"),
             17236, 25458);
+
+//    BeaconData beetrootData = new BeaconData(regionBeetroot, String.format("%d:%d", regionBeetroot.getMajor(), regionBeetroot.getMinor()));
+//    BeaconData lemonData    = new BeaconData(regionLemon, String.format("%d:%d", regionLemon.getMajor(), regionLemon.getMinor()));
+//    BeaconData candyData    = new BeaconData(regionCandy, String.format("%d:%d", regionCandy.getMajor(), regionCandy.getMinor()));
+
+    //Map<Region,BeaconData> beaconDataMap = new HashMap<Region,BeaconData>();
+    Map<String,BeaconData> beaconDataMap = new HashMap<String,BeaconData>();
 
     @Override
     public void onCreate() {
@@ -108,8 +119,11 @@ public class MyApplication extends Application {
                     beaconManager.startMonitoring(regionCandy);
 
                 } else {
-                    // Record user's beacon visit in database :
-                    recordBeaconVisit(beaconKey);
+                    // Note time when region entered
+                    tStart = System.currentTimeMillis();
+                    BeaconData beaconData = new BeaconData(beaconKey, region);
+                    beaconData.settStart(tStart);
+                    beaconDataMap.put(beaconData.getMmKey(), beaconData);
 
                     //  Trigger Overview Activity
                     Intent overviewIntent = new Intent(getApplicationContext(), OverviewActivity.class);
@@ -146,13 +160,23 @@ public class MyApplication extends Application {
                                     "app instore discounts",
                             MainActivity.class
                     );
+                } else {
+                    // get duration of visit
+                    tEnd = System.currentTimeMillis();
+
+                    beaconKey = String.format("%d:%d", region.getMajor(), region.getMinor());
+                    BeaconData beaconData = beaconDataMap.get(beaconKey);
+                    beaconData.settEnd(tEnd);
+
+                    // Record user's beacon visit in database :
+                    recordBeaconVisit(beaconKey);
                 }
             }
         }); //!setMonitoringListener
     }
 
     /* Get Value from database for provided beacon key, if no value use default */
-    public Map<String,String> updateNoVisits(String key, final Map<String,String> dataset, DataSnapshot dataSnapshot) {
+    private Map<String,String> updateNoVisits(String key, final Map<String,String> dataset, DataSnapshot dataSnapshot) {
 
         String visits = dataset.get("noVisits");
 
@@ -167,6 +191,38 @@ public class MyApplication extends Application {
         String updatedVisits = String.valueOf(visitsInt);
 
         dataset.put("noVisits", updatedVisits);
+
+        return dataset;
+    }
+
+    private Map<String,String> updateTimeSpent(String key, Map<String, String> dataset, DataSnapshot dataSnapshot) {
+
+        String timeSpent = dataset.get("timeSpent");
+
+        dataSnapshot = dataSnapshot.child("beaconVisited").child(key).child("timeSpent");
+        if (dataSnapshot.getValue() != null) {
+            timeSpent = dataSnapshot.getValue().toString();
+        }
+        dataset.put("timeSpent", timeSpent);
+
+        double timeDouble = Double.parseDouble(timeSpent);
+
+        BeaconData beaconData = beaconDataMap.get(key);
+
+        // Calculate elapsed time :
+        long tDelta = beaconData.gettEnd() - beaconData.gettStart();
+        double elapsedSeconds = tDelta / 1000.0;
+
+        //TODO: Find out built-in beacon delay and subtract from result
+
+        double cumulativeTime = timeDouble + elapsedSeconds;
+
+        String updatedTimeSpent = String.valueOf(cumulativeTime);
+
+        beaconData.setTimeSpent(updatedTimeSpent);
+        //beaconDataMap.put(beaconData.getMmKey(), beaconData);
+
+        dataset.put("timeSpent", updatedTimeSpent);
 
         return dataset;
     }
@@ -189,8 +245,9 @@ public class MyApplication extends Application {
                 beaconVisitedData.put("noVisits", "0");
                 beaconVisitedData = updateNoVisits(bKey, beaconVisitedData, dataSnapshot);
 
-                beaconVisitedData.put("timeSpent", "0 mins");
+                beaconVisitedData.put("timeSpent", "0");
                 //TODO: updateTimeSpent method
+                beaconVisitedData = updateTimeSpent(bKey, beaconVisitedData, dataSnapshot);
 
                 mBeaconVisitRef.child(bKey).setValue(beaconVisitedData);
             }
