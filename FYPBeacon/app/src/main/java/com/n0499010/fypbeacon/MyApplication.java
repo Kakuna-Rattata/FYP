@@ -45,7 +45,7 @@ public class MyApplication extends Application {
 
     private long tStart = 0;
     private long tEnd = 0;
-    private double elapsedSeconds = 0;
+    private long exitDelay = 30;
 
     public static BeaconManager beaconManager;
 
@@ -67,11 +67,6 @@ public class MyApplication extends Application {
             UUID.fromString("B9407F30-F5F8-466E-AFF9-25556B57FE6D"),
             17236, 25458);
 
-//    BeaconData beetrootData = new BeaconData(regionBeetroot, String.format("%d:%d", regionBeetroot.getMajor(), regionBeetroot.getMinor()));
-//    BeaconData lemonData    = new BeaconData(regionLemon, String.format("%d:%d", regionLemon.getMajor(), regionLemon.getMinor()));
-//    BeaconData candyData    = new BeaconData(regionCandy, String.format("%d:%d", regionCandy.getMajor(), regionCandy.getMinor()));
-
-    //Map<Region,BeaconData> beaconDataMap = new HashMap<Region,BeaconData>();
     Map<String,BeaconData> beaconDataMap = new HashMap<String,BeaconData>();
 
     @Override
@@ -213,9 +208,10 @@ public class MyApplication extends Application {
         long tDelta = beaconData.gettEnd() - beaconData.gettStart();
         double elapsedSeconds = tDelta / 1000.0;
 
-        //TODO: Find out built-in beacon delay and subtract from result
+        // Estimote beacons have a built in delay of 30 seconds for exit events, subtract to get actual duration
+        elapsedSeconds -= exitDelay;
 
-        double cumulativeTime = timeDouble + elapsedSeconds;
+        int cumulativeTime = (int) (timeDouble + elapsedSeconds);
 
         String updatedTimeSpent = String.valueOf(cumulativeTime);
 
@@ -246,7 +242,6 @@ public class MyApplication extends Application {
                 beaconVisitedData = updateNoVisits(bKey, beaconVisitedData, dataSnapshot);
 
                 beaconVisitedData.put("timeSpent", "0");
-                //TODO: updateTimeSpent method
                 beaconVisitedData = updateTimeSpent(bKey, beaconVisitedData, dataSnapshot);
 
                 mBeaconVisitRef.child(bKey).setValue(beaconVisitedData);
