@@ -40,6 +40,7 @@ import static com.n0499010.fypbeacon.Global.userRef;
 *  Required for managing Beacons from any Activity in the app. */
 public class MyApplication extends Application {
 
+    private static final String TAG = "MyApplication";
     private String beaconKey;
 
     public static BeaconManager beaconManager;
@@ -68,31 +69,6 @@ public class MyApplication extends Application {
 
         /*  Firebase database setup : */
         if(!FirebaseApp.getApps(this).isEmpty()) { FirebaseDatabase.getInstance().setPersistenceEnabled(true); }
-
-
-//        mUsername = ANONYMOUS;
-//
-//        // Initialize Firebase Auth
-//        mFirebaseAuth = FirebaseAuth.getInstance();
-//        mFirebaseUser = mFirebaseAuth.getCurrentUser();
-//        if (mFirebaseUser == null) {
-//            // Not signed in, launch the Sign In activity
-//            startActivity(new Intent(this, SignInActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
-//            //finish();
-//            return;
-//        } else {
-//            // user authenticated
-//            mUid = mFirebaseUser.getUid();
-//            mUsername = mFirebaseUser.getDisplayName();
-//            if (mFirebaseUser.getPhotoUrl() != null) {
-//                mPhotoUrl = mFirebaseUser.getPhotoUrl().toString();
-//            }
-//
-//            //TODO: Call initialiseApp method
-//
-//            //TODO: Call initialiseAccount method
-//            initialiseAccount(mUid);
-//        }
 
         /* Estimote SDK Initialization : */
         EstimoteSDK.initialize(getApplicationContext(), Global.appID, Global.appToken);
@@ -175,49 +151,25 @@ public class MyApplication extends Application {
         }); //!setMonitoringListener
     }
 
-//    public void initialiseApp() {
-//        //TODO: initApp method
-//
-//        // Create offer objects from database
-//    }
-//
-//    public void initialiseAccount(String userId) {
-//        //TODO: initAcc method
-//
-//        final User user = new User();
-//        user.setuID(userId);
-//
-//        // Read database, lookup Uid to see if already exists :
-//        userRef.addListenerForSingleValueEvent(new ValueEventListener() {
-//            @Override
-//            public void onDataChange(DataSnapshot dataSnapshot) {
-//                if (dataSnapshot.hasChild(user.getuID())) {
-//                    // if Uid already exists, add 'OF_Return' offer:
-//
-//                    // add as key under user's 'offer's node, set value to 'true'
-//                    Map<String,String> userData = new HashMap<String, String>();
-//                    userData.put("OF_Return", "true");
-//
-//                    userRef.setValue(userData);
-//                } else {
-//                    // if Uid not present, write value to db as new key under 'user' as root node
-//                    Map<String,String> userData = new HashMap<String, String>();
-//                    //TODO: get offers from database, save to global offer list on sign-in
-//                    userData.put("OF_Welcome", "true");
-//
-//                    // Add new UID, under Uid node, add 'offers' node
-//                    userRef = userRef.child(user.getuID()).child("offers");
-//                    // Add new offer under offers node: Key: OF_Welcome, value "true"
-//                    userRef.setValue(userData);
-//                }
-//            }
-//
-//            @Override
-//            public void onCancelled(DatabaseError databaseError) {
-//
-//            }
-//        });
-//    }
+    /* Get Value from database for provided beacon key, if no value use default */
+    public Map<String,String> updateNoVisits(String key, final Map<String,String> dataset, DataSnapshot dataSnapshot) {
+
+        String visits = dataset.get("noVisits");
+
+        dataSnapshot = dataSnapshot.child("beaconVisited").child(key).child("noVisits");
+        if (dataSnapshot.getValue() != null) {
+            visits = dataSnapshot.getValue().toString();
+        }
+        dataset.put("noVisits", visits);
+
+        int visitsInt = Integer.parseInt(dataset.get("noVisits"));
+        visitsInt++;
+        String updatedVisits = String.valueOf(visitsInt);
+
+        dataset.put("noVisits", updatedVisits);
+
+        return dataset;
+    }
 
     public void recordBeaconVisit(String key) {
 
@@ -232,14 +184,15 @@ public class MyApplication extends Application {
                 DatabaseReference mBeaconVisitRef = mUserRef.child("beaconVisited");
                 mBeaconVisitRef.child(bKey);
 
-                //mUserRef.child("beaconVisited").child(bKey);
-
                 Map<String,String> beaconVisitedData = new HashMap<String, String>();
-                beaconVisitedData.put("noVisits", "1");
-                beaconVisitedData.put("timeSpent", "2 mins");
+
+                beaconVisitedData.put("noVisits", "0");
+                beaconVisitedData = updateNoVisits(bKey, beaconVisitedData, dataSnapshot);
+
+                beaconVisitedData.put("timeSpent", "0 mins");
+                //TODO: updateTimeSpent method
 
                 mBeaconVisitRef.child(bKey).setValue(beaconVisitedData);
-                //mUserRef.child(bKey).setValue(beaconVisitedData);
             }
 
             @Override

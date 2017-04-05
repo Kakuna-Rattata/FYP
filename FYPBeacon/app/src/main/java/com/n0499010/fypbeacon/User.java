@@ -17,6 +17,10 @@ public class User implements Serializable {
     private Map<String,Boolean> offers;
     private List<Offer> wishlist;
 
+    private Map<String,Map<String,String>> beaconsVisited;
+
+    private Map<String,String> noVisitsMap;
+
 
     public User() {
 
@@ -24,7 +28,7 @@ public class User implements Serializable {
 
     public User(String uID, Map<String, Boolean> offers, List<Offer> wishlist) {
         this.uID = uID;
-        //this.displayName = displayName;
+
         this.offers = offers;
         this.wishlist = wishlist;
     }
@@ -59,5 +63,21 @@ public class User implements Serializable {
 
     public void setWishlist(List<Offer> wishlist) {
         this.wishlist = wishlist;
+    }
+
+    public Map<String, Map<String, String>> getBeaconsVisited() {
+        return beaconsVisited;
+    }
+
+    public void setBeaconsVisited(Map<String, Map<String, String>> beaconsVisited) {
+        this.beaconsVisited = beaconsVisited;
+    }
+
+    public Map<String, String> getNoVisitsMap() {
+        return noVisitsMap;
+    }
+
+    public void setNoVisitsMap(Map<String, String> noVisitsMap) {
+        this.noVisitsMap = noVisitsMap;
     }
 }

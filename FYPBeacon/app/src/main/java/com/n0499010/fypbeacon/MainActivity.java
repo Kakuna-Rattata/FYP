@@ -209,7 +209,6 @@ public class MainActivity extends AppCompatActivity
     public void initialiseAccount(String userId) {
         //TODO: initAcc method
 
-        //final User user = new User();
         mUser.setuID(userId);
 
         // Read database, lookup Uid to see if already exists :
@@ -226,7 +225,6 @@ public class MainActivity extends AppCompatActivity
                     DatabaseReference mUserRef = userRef;
                     mUserRef = userRef.child(mUser.getuID()).child("offers");
                     mUserRef.child("OF_Return").setValue("true");
-                    //mUserRef.setValue(userData);
                 } else {
                     // if Uid not present, write value to db as new key under 'user' as root node
                     Map<String,String> userData = new HashMap<String, String>();
