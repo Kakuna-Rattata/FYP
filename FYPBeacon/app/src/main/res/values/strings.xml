@@ -3,4 +3,6 @@
     <string name="menu_log_out">Log Out</string>
     <string name="menu_sign_out">Sign out</string>
     <string name="wishlist_add">Added to Wishlist</string>
+    <string name="label_wishlist">My Wishlist</string>
+    <string name="label_nearby_offers">Nearby Offers</string>
 </resources>

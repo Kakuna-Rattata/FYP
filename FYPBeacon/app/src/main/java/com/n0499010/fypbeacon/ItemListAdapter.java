@@ -7,7 +7,7 @@ import android.widget.TextView;
 import com.firebase.ui.database.FirebaseListAdapter;
 
 /**
- * Created by N0499010 Shannon Hibbett on 08/03/2017.
+ * Created by Shannon Hibbett (N0499010) on 08/03/2017.
  */
 
 public class ItemListAdapter extends FirebaseListAdapter<Item> {

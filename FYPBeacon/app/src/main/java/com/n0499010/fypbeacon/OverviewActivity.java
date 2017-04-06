@@ -5,6 +5,7 @@ import android.os.PersistableBundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -43,6 +44,7 @@ public class OverviewActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_overview);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         imageView = (ImageView) findViewById(R.id.imageView_overview);
         textViewTitle = (TextView) findViewById(R.id.textView_title);
@@ -110,6 +112,10 @@ public class OverviewActivity extends AppCompatActivity {
             }
         });
 
+        //TODO: disable button when item already in wishlist
+        // Check database, onDataChange lookup item under 'wishlist' ref using title as key
+        // if found, disable button
+
         fabWishlist.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -118,10 +124,24 @@ public class OverviewActivity extends AppCompatActivity {
 
                 mUserRef.child("wishlist").child(item.getTitle()).setValue(item.getPrice());
 
+                //TODO: change button graphic to 'selected' graphic
+
                 String toastText = getString(R.string.wishlist_add);
                 Toast.makeText(getApplicationContext(), toastText, Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == android.R.id.home) {
+            finish();
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     @Override

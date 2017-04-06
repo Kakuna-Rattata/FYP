@@ -25,6 +25,8 @@ import java.util.Map;
 import java.util.UUID;
 
 import static com.n0499010.fypbeacon.Global.getActivity;
+import static com.n0499010.fypbeacon.Global.mSharedPreferences;
+import static com.n0499010.fypbeacon.Global.mUid;
 import static com.n0499010.fypbeacon.Global.mUser;
 import static com.n0499010.fypbeacon.Global.scanDurInterval;
 import static com.n0499010.fypbeacon.Global.scanWaitInterval;
@@ -67,14 +69,16 @@ public class MyApplication extends Application {
             UUID.fromString("B9407F30-F5F8-466E-AFF9-25556B57FE6D"),
             17236, 25458);
 
-    Map<String,BeaconData> beaconDataMap = new HashMap<String,BeaconData>();
+    Map<String, BeaconData> beaconDataMap = new HashMap<String, BeaconData>();
 
     @Override
     public void onCreate() {
         super.onCreate();
 
         /*  Firebase database setup : */
-        if(!FirebaseApp.getApps(this).isEmpty()) { FirebaseDatabase.getInstance().setPersistenceEnabled(true); }
+        if (!FirebaseApp.getApps(this).isEmpty()) {
+            FirebaseDatabase.getInstance().setPersistenceEnabled(true);
+        }
 
         /* Estimote SDK Initialization : */
         EstimoteSDK.initialize(getApplicationContext(), Global.appID, Global.appToken);
@@ -84,94 +88,125 @@ public class MyApplication extends Application {
         beaconManager = new BeaconManager(getApplicationContext());
         beaconManager.setBackgroundScanPeriod(scanDurInterval, scanWaitInterval);
 
-        beaconManager.connect(new BeaconManager.ServiceReadyCallback() {
-            @Override
-            public void onServiceReady() {
-                beaconManager.startMonitoring(regionAll);
-            }
-        });
+        mSharedPreferences = getSharedPreferences("com.example.shann.galleriesofjustice", MODE_PRIVATE);
+//        mSharedPreferences.registerOnSharedPreferenceChangeListener(new SharedPreferences.OnSharedPreferenceChangeListener() {
+//            @Override
+//            public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+//
+//                if (mSharedPreferences.getBoolean("authenticated", true) == true) {
 
-        beaconManager.setMonitoringListener(new BeaconManager.MonitoringListener() {
-            @Override
-            public void onEnteredRegion(Region region, List<Beacon> list) {
-
-                Log.d("monitoring: enter", region.toString());
-                Log.d("region identifier", region.getIdentifier());
-
-                //  Get beacon's MajorMinor key
-                beaconKey = String.format("%d:%d", region.getMajor(), region.getMinor());
-
-                if (region == regionAll) {
-                    // Display welcome notiiication when discovering any beacon :
-                    showNotification(
-                            "Welcome to the store",                             // Title
-                            "Check out the latest app-only instore offers.",    // Message
-
-                            MainActivity.class                                  // Context
-                    );
-                    beaconManager.startMonitoring(regionBeetroot);
-                    beaconManager.startMonitoring(regionLemon);
-                    beaconManager.startMonitoring(regionCandy);
-
-                } else {
-                    // Note time when region entered
-                    tStart = System.currentTimeMillis();
-                    BeaconData beaconData = new BeaconData(beaconKey, region);
-                    beaconData.settStart(tStart);
-                    beaconDataMap.put(beaconData.getMmKey(), beaconData);
-
-                    //  Trigger Overview Activity
-                    Intent overviewIntent = new Intent(getApplicationContext(), OverviewActivity.class);
-                    overviewIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    //  Provide region's beacon Major:Minor key
-                    overviewIntent.putExtra("beaconKey", beaconKey);
-
-                    //  If app open in foreground, but not on Overview, launch new Overview Activity on top :
-                    if (getActivity() != null && getActivity().getClass() != OverviewActivity.class) {
-
-                        startActivity(overviewIntent);
-
-                    } else {
-
-                        if (region == regionCandy) {
-                            showNotification(
-                                    "Exclusive deals on footwear!",
-                                    "Select to view - here only!",
-                                    ItemListActivity.class      //TODO: Deal page
-                            );
+                    beaconManager.connect(new BeaconManager.ServiceReadyCallback() {
+                        @Override
+                        public void onServiceReady() {
+                            beaconManager.startMonitoring(regionAll);
                         }
-                    }
+                    });
+
+                    beaconManager.setMonitoringListener(new BeaconManager.MonitoringListener() {
+                        @Override
+                        public void onEnteredRegion(Region region, List<Beacon> list) {
+
+                            Log.d("monitoring: enter", region.toString());
+                            Log.d("region identifier", region.getIdentifier());
+
+                            //  Get beacon's MajorMinor key
+                            beaconKey = String.format("%d:%d", region.getMajor(), region.getMinor());
+
+                            if (region == regionAll) {
+                                // Display welcome notiiication when discovering any beacon :
+                                showNotification(
+                                        "Welcome to the store",                             // Title
+                                        "Check out the latest app-only instore offers.",    // Message
+
+                                        MainActivity.class                                  // Context
+                                );
+                                beaconManager.startMonitoring(regionBeetroot);
+                                beaconManager.startMonitoring(regionLemon);
+                                beaconManager.startMonitoring(regionCandy);
+
+                            } else {
+                                // Note time when region entered
+                                tStart = System.currentTimeMillis();
+                                BeaconData beaconData = new BeaconData(beaconKey, region);
+                                beaconData.settStart(tStart);
+                                beaconDataMap.put(beaconData.getMmKey(), beaconData);
+
+                                //  Trigger Overview Activity
+                                Intent overviewIntent = new Intent(getApplicationContext(), OverviewActivity.class);
+                                overviewIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                //  Provide region's beacon Major:Minor key
+                                overviewIntent.putExtra("beaconKey", beaconKey);
+
+                                //  If app open in foreground, but not on Overview, launch new Overview Activity on top :
+                                if (getActivity() != null && getActivity().getClass() != OverviewActivity.class) {
+
+                                    startActivity(overviewIntent);
+
+                                } else {
+
+                                    if (region == regionCandy) {
+                                        showNotification(
+                                                "Exclusive deals on footwear!",
+                                                "Select to view - here only!",
+                                                ItemListActivity.class      //TODO: Deal page
+                                        );
+                                    }
+                                }
+                            }
+                        }   //!OnEnteredRegion
+
+                        @Override
+                        public void onExitedRegion(Region region) {
+                            Log.d("monitoring: exit", region.toString());
+
+                            if (region == regionAll) {
+                                showNotification(
+                                        "Thank you for shopping with us",
+                                        "Check back soon for the latest " +
+                                                "app instore discounts",
+                                        MainActivity.class
+                                );
+                            } else {
+                                // get duration of visit
+                                tEnd = System.currentTimeMillis();
+
+                                beaconKey = String.format("%d:%d", region.getMajor(), region.getMinor());
+                                BeaconData beaconData = beaconDataMap.get(beaconKey);
+                                try { beaconData.settEnd(tEnd); }
+                                catch (Exception exception) {
+                                    //
+                                }
+
+                                // Record user's beacon visit in database :
+                                recordBeaconVisit(beaconKey);
+                            }
+                        }
+                    }); //!setMonitoringListener
+
+//                }
+//            }
+//        });
+
+        if (mUid != null) {
+            DatabaseReference userOfferRef = userRef.child(mUid).child("offers");
+            userOfferRef.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+
+
                 }
-            }   //!OnEnteredRegion
 
-            @Override
-            public void onExitedRegion(Region region) {
-                Log.d("monitoring: exit", region.toString());
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
 
-                if (region == regionAll) {
-                    showNotification(
-                            "Thank you for shopping with us",
-                            "Check back soon for the latest " +
-                                    "app instore discounts",
-                            MainActivity.class
-                    );
-                } else {
-                    // get duration of visit
-                    tEnd = System.currentTimeMillis();
-
-                    beaconKey = String.format("%d:%d", region.getMajor(), region.getMinor());
-                    BeaconData beaconData = beaconDataMap.get(beaconKey);
-                    beaconData.settEnd(tEnd);
-
-                    // Record user's beacon visit in database :
-                    recordBeaconVisit(beaconKey);
                 }
-            }
-        }); //!setMonitoringListener
+            });
+        }
+
     }
 
     /* Get Value from database for provided beacon key, if no value use default */
-    private Map<String,String> updateNoVisits(String key, final Map<String,String> dataset, DataSnapshot dataSnapshot) {
+    private Map<String, String> updateNoVisits(String key, final Map<String, String> dataset, DataSnapshot dataSnapshot) {
 
         String visits = dataset.get("noVisits");
 
@@ -190,7 +225,7 @@ public class MyApplication extends Application {
         return dataset;
     }
 
-    private Map<String,String> updateTimeSpent(String key, Map<String, String> dataset, DataSnapshot dataSnapshot) {
+    private Map<String, String> updateTimeSpent(String key, Map<String, String> dataset, DataSnapshot dataSnapshot) {
 
         String timeSpent = dataset.get("timeSpent");
 
@@ -204,8 +239,12 @@ public class MyApplication extends Application {
 
         BeaconData beaconData = beaconDataMap.get(key);
 
+        long tDelta = 0;
         // Calculate elapsed time :
-        long tDelta = beaconData.gettEnd() - beaconData.gettStart();
+        try { tDelta = beaconData.gettEnd() - beaconData.gettStart(); }
+        catch (Exception exception) {
+            //TODO: exception handling
+        }
         double elapsedSeconds = tDelta / 1000.0;
 
         // Estimote beacons have a built in delay of 30 seconds for exit events, subtract to get actual duration
@@ -236,7 +275,7 @@ public class MyApplication extends Application {
                 DatabaseReference mBeaconVisitRef = mUserRef.child("beaconVisited");
                 mBeaconVisitRef.child(bKey);
 
-                Map<String,String> beaconVisitedData = new HashMap<String, String>();
+                Map<String, String> beaconVisitedData = new HashMap<String, String>();
 
                 beaconVisitedData.put("noVisits", "0");
                 beaconVisitedData = updateNoVisits(bKey, beaconVisitedData, dataSnapshot);
@@ -260,7 +299,7 @@ public class MyApplication extends Application {
 
         Intent notificationIntent = new Intent(this, intentActivityClass);
         notificationIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        PendingIntent pendingIntent = PendingIntent.getActivities(this, 0, new Intent[] {notificationIntent}, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pendingIntent = PendingIntent.getActivities(this, 0, new Intent[]{notificationIntent}, PendingIntent.FLAG_UPDATE_CURRENT);
 
         Notification notification = new Notification.Builder(this)
                 .setSmallIcon(android.R.drawable.ic_dialog_info)
