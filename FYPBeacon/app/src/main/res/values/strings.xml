@@ -5,4 +5,6 @@
     <string name="wishlist_add">Added to Wishlist</string>
     <string name="label_wishlist">My Wishlist</string>
     <string name="label_nearby_offers">Nearby Offers</string>
+    <string name="toast_text_wishlist_remove">Item Removed</string>
+    <string name="label_my_offers">My Offers</string>
 </resources>

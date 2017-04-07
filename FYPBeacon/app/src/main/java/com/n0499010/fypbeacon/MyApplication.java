@@ -24,7 +24,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import static com.n0499010.fypbeacon.Global.firebaseRootRef;
 import static com.n0499010.fypbeacon.Global.getActivity;
+import static com.n0499010.fypbeacon.Global.mOfferMap;
 import static com.n0499010.fypbeacon.Global.mSharedPreferences;
 import static com.n0499010.fypbeacon.Global.mUid;
 import static com.n0499010.fypbeacon.Global.mUser;
@@ -203,6 +205,21 @@ public class MyApplication extends Application {
             });
         }
 
+        DatabaseReference offerRef = firebaseRootRef.child("offers");
+        offerRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot child : dataSnapshot.getChildren()) {
+                    Offer offer = new Offer(child.getKey(), (String) child.getValue());
+                    mOfferMap.offerMap.put(child.getKey(),offer);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
     /* Get Value from database for provided beacon key, if no value use default */

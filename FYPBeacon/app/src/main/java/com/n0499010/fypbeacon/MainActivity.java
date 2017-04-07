@@ -64,53 +64,6 @@ public class MainActivity extends AppCompatActivity
         buttonFeedback = (Button) findViewById(R.id.button_feedback);
         buttonSignOut = (Button) findViewById(R.id.button_sign_out);
 
-        buttonAccount.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //TODO: Account overview page
-            }
-        });
-
-        buttonWishlist.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(getApplicationContext(), WishlistActivity.class));
-            }
-        });
-
-        buttonNearbyOffers.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(getApplicationContext(), NearbyOffers.class));
-            }
-        });
-
-        buttonMyOffers.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //TODO: My Offers page
-            }
-        });
-
-        buttonFeedback.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //TODO: Feedback button
-            }
-        });
-
-        buttonSignOut.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                mFirebaseAuth.signOut();
-                Auth.GoogleSignInApi.signOut(mGoogleApiClient);
-                mUsername = ANONYMOUS;
-                startActivity(new Intent(getApplicationContext(), SignInActivity.class));
-            }
-        });
-
-        ////////////////////////////////////////////////////////////////////////////////////////////
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this /* FragmentActivity */, this /* OnConnectionFailedListener */)
                 .addApi(Auth.GOOGLE_SIGN_IN_API)
@@ -139,6 +92,54 @@ public class MainActivity extends AppCompatActivity
             //TODO: Call initialiseAccount method
             initialiseAccount(mUid);
         }
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+
+        buttonAccount.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //TODO: Account overview page
+            }
+        });
+
+        buttonWishlist.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(getApplicationContext(), WishlistActivity.class));
+            }
+        });
+
+        buttonNearbyOffers.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(getApplicationContext(), NearbyOffers.class));
+            }
+        });
+
+        buttonMyOffers.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(getApplicationContext(), MyOffers.class));
+            }
+        });
+
+        buttonFeedback.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //TODO: Feedback button
+            }
+        });
+
+        buttonSignOut.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                mFirebaseAuth.signOut();
+                Auth.GoogleSignInApi.signOut(mGoogleApiClient);
+                mUsername = ANONYMOUS;
+                startActivity(new Intent(getApplicationContext(), SignInActivity.class));
+            }
+        });
     }
 
     public void initialiseApp() {
@@ -155,7 +156,6 @@ public class MainActivity extends AppCompatActivity
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.hasChild(mUser.getuID())) {
                     // if Uid already exists, add 'OF_Return' offer:
-
                     // add as key under user's 'offer's node, set value to 'true'
                     Map<String,String> userData = new HashMap<String, String>();
                     userData.put("OF_Return", "true");

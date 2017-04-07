@@ -52,12 +52,12 @@ public class Global {
     public static FirebaseAuth mFirebaseAuth;
     public static FirebaseUser mFirebaseUser;
 
+    public static GoogleApiClient mGoogleApiClient;
+
     public static String mUid;
     public static String mUsername;
     public static final String ANONYMOUS = "anonymous";
     public static String mPhotoUrl;
-
-    public static GoogleApiClient mGoogleApiClient;
 
     public static Map<String,Offer> offers;
 
@@ -70,8 +70,9 @@ public class Global {
     public static long scanDurInterval = 5000;
     public static long scanWaitInterval = 3000;
 
-
     public static Intent notifyIntent;
+
+    public static OfferMap mOfferMap = new OfferMap();
 
     /*  App Global Access Methods :    */
     public static void showNotification(String title, String message, Intent notificationIntent, Context context) {

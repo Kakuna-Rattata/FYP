@@ -24,6 +24,8 @@ import com.google.firebase.auth.GoogleAuthProvider;
 import static com.n0499010.fypbeacon.Global.mFirebaseAuth;
 
 /**
+ * Source code reference: https://firebase.google.com/docs/auth/android/google-signin
+ *
  * Copyright Google Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -101,9 +103,6 @@ public class SignInActivity extends AppCompatActivity implements
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         Log.d(TAG, "signInWithCredential:onComplete:" + task.isSuccessful());
-
-
-
                         // If sign in fails, display a message to the user. If sign in succeeds
                         // the auth state listener will be notified and logic to handle the
                         // signed in user can be handled in the listener.

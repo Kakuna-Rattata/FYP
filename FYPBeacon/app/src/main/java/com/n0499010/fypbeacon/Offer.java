@@ -3,15 +3,13 @@ package com.n0499010.fypbeacon;
 import java.io.Serializable;
 
 /**
- * Created by shann on 04/04/2017.
+ * Created by Shannon Hibbett (N0499010) on 04/04/2017.
  */
 
 public class Offer implements Serializable {
 
-
     private String offerID;
     private String offerDesc;
-
 
     public Offer() {
 
