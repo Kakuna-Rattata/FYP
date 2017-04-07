@@ -3,11 +3,13 @@ package com.n0499010.fypbeacon;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.firebase.ui.database.FirebaseListAdapter;
-import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
 
 import static com.n0499010.fypbeacon.Global.mUid;
@@ -24,23 +26,56 @@ public class WishlistActivity extends AppCompatActivity {
 
         listViewWishlist = (ListView) findViewById(R.id.listView_wishlist);
 
-        DatabaseReference mUserRef = userRef.child(mUid);
-        DatabaseReference wishlistRef = mUserRef.child("wishlist");
+        Button buttonRemove;
 
-        FirebaseListAdapter<String> firebaseListAdapter = new FirebaseListAdapter<String>
-                (this, String.class, android.R.layout.simple_list_item_1, wishlistRef) {
+        DatabaseReference mUserRef = userRef.child(mUid);
+        final DatabaseReference wishlistRef = mUserRef.child("wishlist");
+
+        final FirebaseListAdapter<String> firebaseListAdapter = new FirebaseListAdapter<String>
+                (this, String.class, R.layout.wishlist_listview_item, wishlistRef) {
+/*android.R.layout.simple_list_item_1*/
+
+//            @Override
+//            protected String parseSnapshot(DataSnapshot snapshot) {
+//                return snapshot.getChildren().iterator().next().getValue(String.class);
+//            }
 
             @Override
-            protected String parseSnapshot(DataSnapshot snapshot) {
-                return snapshot.getChildren().iterator().next().getValue(String.class);
+            protected void populateView(View v, String itemValue, int position) {
+
+                final DatabaseReference itemRef = getRef(position);
+                String itemKey = itemRef.getKey();
+
+                //TextView value = (TextView)v.findViewById(android.R.id.text1);
+                TextView value = (TextView)v.findViewById(R.id.label);
+                value.setText(itemKey + " " + itemValue);
+
+                //Handle buttons and add onClickListeners
+                Button buttonRemove = (Button) v.findViewById(R.id.button_remove);
+
+                buttonRemove.setOnClickListener(new View.OnClickListener(){
+                    @Override
+                    public void onClick(View v) {
+                        //list.remove(position);
+                        itemRef.removeValue();
+
+                        //TODO: Update database
+                        Toast.makeText(getApplicationContext(), "Item Removed", Toast.LENGTH_SHORT).show();
+
+                        notifyDataSetChanged();
+                    }
+                });
             }
 
             @Override
-            protected void populateView(View v, String s, int position) {
-                TextView menuName = (TextView)v.findViewById(android.R.id.text1);
-                menuName.setText(s);
+            public View getView(int position, View view, ViewGroup viewGroup) {
+
+
+
+                return super.getView(position, view, viewGroup);
             }
         };
         listViewWishlist.setAdapter(firebaseListAdapter);
+
     }
 }
