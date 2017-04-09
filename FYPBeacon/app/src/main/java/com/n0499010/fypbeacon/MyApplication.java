@@ -101,6 +101,9 @@ public class MyApplication extends Application {
                         @Override
                         public void onServiceReady() {
                             beaconManager.startMonitoring(regionAll);
+                            beaconManager.startMonitoring(regionBeetroot);
+                            beaconManager.startMonitoring(regionLemon);
+                            beaconManager.startMonitoring(regionCandy);
                         }
                     });
 
@@ -122,10 +125,6 @@ public class MyApplication extends Application {
 
                                         MainActivity.class                                  // Context
                                 );
-                                beaconManager.startMonitoring(regionBeetroot);
-                                beaconManager.startMonitoring(regionLemon);
-                                beaconManager.startMonitoring(regionCandy);
-
                             } else {
                                 // Note time when region entered
                                 tStart = System.currentTimeMillis();
@@ -133,7 +132,6 @@ public class MyApplication extends Application {
                                 beaconData.settStart(tStart);
                                 beaconDataMap.put(beaconData.getMmKey(), beaconData);
 
-                                //  Trigger Overview Activity
                                 Intent overviewIntent = new Intent(getApplicationContext(), OverviewActivity.class);
                                 overviewIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                                 //  Provide region's beacon Major:Minor key
@@ -145,14 +143,20 @@ public class MyApplication extends Application {
                                     startActivity(overviewIntent);
 
                                 } else {
+                                    Global.showNotification(
+                                            "Product Nearby",
+                                            "Tap to view",
+                                            overviewIntent,
+                                            getApplicationContext()
+                                    );
 
-                                    if (region == regionCandy) {
-                                        showNotification(
-                                                "Exclusive deals on footwear!",
-                                                "Select to view - here only!",
-                                                ItemListActivity.class      //TODO: Deal page
-                                        );
-                                    }
+//                                    if (region == regionCandy) {
+//                                        showNotification(
+//                                                "Exclusive deals on footwear!",
+//                                                "Select to view - here only!",
+//                                                ItemListActivity.class      //TODO: Deal page
+//                                        );
+//                                    }
                                 }
                             }
                         }   //!OnEnteredRegion

@@ -7,4 +7,5 @@
     <string name="label_nearby_offers">Nearby Offers</string>
     <string name="toast_text_wishlist_remove">Item Removed</string>
     <string name="label_my_offers">My Offers</string>
+    <string name="wishlist_remove">Removed from Wishlist</string>
 </resources>

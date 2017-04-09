@@ -36,9 +36,12 @@ public class OverviewActivity extends AppCompatActivity {
     private TextView textViewPrice;
     private TextView textViewDesc;
     private FloatingActionButton fabWishlist;
+    private FloatingActionButton fabComment;
 
     String beaconKey;
     Bundle extras;
+
+    Boolean inWishlist = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +54,10 @@ public class OverviewActivity extends AppCompatActivity {
         textViewPrice = (TextView) findViewById(R.id.textView_price);
         textViewDesc = (TextView) findViewById(R.id.textView_desc);
         fabWishlist = (FloatingActionButton) findViewById(R.id.fab_wishlist);
+        fabComment = (FloatingActionButton) findViewById(R.id.fab_comment);
+
+        final DatabaseReference mUserRef = userRef.child(mUser.getuID());
+        final DatabaseReference wishlistRef = mUserRef.child("wishlist");
 
         //  Get beaconKey passed from triggering Intent :
         extras = getIntent().getExtras();
@@ -112,22 +119,61 @@ public class OverviewActivity extends AppCompatActivity {
             }
         });
 
-        //TODO: disable button when item already in wishlist
         // Check database, onDataChange lookup item under 'wishlist' ref using title as key
-        // if found, disable button
+        wishlistRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if ( (dataSnapshot.child(item.getTitle()).getValue()) == null  ) {
+                    // not in wishlist
+                    fabWishlist.setImageResource(android.R.drawable.star_off);
+                    inWishlist = false;
+                } else {
+                    fabWishlist.setImageResource(android.R.drawable.btn_star_big_on);
+                    inWishlist = true;
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+        fabComment.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //TODO: Leave item comment
+            }
+        });
 
         fabWishlist.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //  Add item to User's Wishlist (Add to database) :
-                final DatabaseReference mUserRef = userRef.child(mUser.getuID());
+                if (inWishlist) {
+                    // Remove from wishlist
+                    mUserRef.child("wishlist").child(item.getTitle()).removeValue();
 
-                mUserRef.child("wishlist").child(item.getTitle()).setValue(item.getPrice());
+                    // Change button graphic to 'unselected' graphic
+                    fabWishlist.setImageResource(android.R.drawable.star_off);
 
-                //TODO: change button graphic to 'selected' graphic
+                    Toast.makeText(getApplicationContext(),
+                            getString(R.string.wishlist_remove),
+                            Toast.LENGTH_SHORT).show();
 
-                String toastText = getString(R.string.wishlist_add);
-                Toast.makeText(getApplicationContext(), toastText, Toast.LENGTH_SHORT).show();
+                    inWishlist = false;
+                } else {
+                    //  Add item (name and price) to User's Wishlist (Add to database) :
+                    mUserRef.child("wishlist").child(item.getTitle()).setValue(item.getPrice());
+
+                    // Change button graphic to 'selected' graphic
+                    fabWishlist.setImageResource(android.R.drawable.btn_star_big_on);
+
+                    Toast.makeText(getApplicationContext(),
+                            getString(R.string.wishlist_add),
+                            Toast.LENGTH_SHORT).show();
+
+                    inWishlist = true;
+                }
             }
         });
     }

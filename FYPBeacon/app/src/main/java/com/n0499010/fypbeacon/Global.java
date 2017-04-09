@@ -33,6 +33,7 @@ import java.util.Map;
 
 public class Global {
 
+    //private static final String TAG = getActivity().toString();
     /*  App Values for Global Access :  */
     public static SharedPreferences mSharedPreferences;
 
@@ -169,4 +170,37 @@ public class Global {
 
         return null;
     }
+
+    //TODO logout Global
+//    public void logout(Context LogoutActivity, Context LoginActivity) {
+//        final Context logout = LogoutActivity;
+//        final Context login = LoginActivity;
+//
+//        mGoogleApiClient.connect();
+//        mGoogleApiClient.registerConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
+//            @Override
+//            public void onConnected(@Nullable Bundle bundle) {
+//
+//                FirebaseAuth.getInstance().signOut();
+//                if(mGoogleApiClient.isConnected()) {
+//                    Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(new ResultCallback<Status>() {
+//                        @Override
+//                        public void onResult(@NonNull Status status) {
+//                            if (status.isSuccess()) {
+//                                Log.d(TAG, "User Logged out");
+//                                Intent intent = new Intent(getActivity(), login.getClass());
+//                                getActivity().startActivity(intent);
+//                                getActivity().finish();
+//                            }
+//                        }
+//                    });
+//                }
+//            }
+//
+//            @Override
+//            public void onConnectionSuspended(int i) {
+//                Log.d(getActivity().toString(), "Google API Client Connection Suspended");
+//            }
+//        });
+//    }
 }

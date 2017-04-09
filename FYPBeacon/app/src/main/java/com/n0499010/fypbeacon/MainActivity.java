@@ -13,6 +13,7 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.estimote.sdk.BeaconManager;
+import com.estimote.sdk.SystemRequirementsChecker;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -210,5 +211,12 @@ public class MainActivity extends AppCompatActivity
         // be available.
         Log.d("MainActivity", "onConnectionFailed:" + connectionResult);
         Toast.makeText(this, "Google Play Services error.", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        SystemRequirementsChecker.checkWithDefaultDialogs(this);
     }
 }
