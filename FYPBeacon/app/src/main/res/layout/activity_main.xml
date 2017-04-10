@@ -23,7 +23,7 @@
 
 
             <Button
-                android:text="My Account"
+                android:text="@string/label_my_account"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/button_account" />
@@ -37,14 +37,14 @@
                 android:layout_height="wrap_content"
                 app:srcCompat="@drawable/cast_abc_scrubber_control_off_mtrl_alpha"
                 android:id="@+id/button_nearby_offers"
-                android:text="Nearby Offers" />
+                android:text="@string/label_nearby_products" />
 
             <Space
                 android:layout_width="match_parent"
                 android:layout_height="16dp" />
 
             <Button
-                android:text="My Offers"
+                android:text="@string/label_my_offers"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/button_my_offers" />
@@ -58,14 +58,14 @@
                 android:layout_height="wrap_content"
                 app:srcCompat="@android:drawable/star_off"
                 android:id="@+id/button_wishlist"
-                android:text="Wishlist" />
+                android:text="@string/label_wishlist" />
 
             <Space
                 android:layout_width="match_parent"
                 android:layout_height="15dp" />
 
             <Button
-                android:text="Leave Feedback"
+                android:text="@string/label_leave_feedback"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/button_feedback" />
@@ -75,7 +75,7 @@
                 android:layout_height="60dp" />
 
             <Button
-                android:text="Sign Out"
+                android:text="@string/label_sign_out"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/button_sign_out" />

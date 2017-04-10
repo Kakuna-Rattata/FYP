@@ -1,11 +1,10 @@
 package com.n0499010.fypbeacon;
 
 import android.app.Application;
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.estimote.sdk.Beacon;
@@ -13,6 +12,7 @@ import com.estimote.sdk.BeaconManager;
 import com.estimote.sdk.EstimoteSDK;
 import com.estimote.sdk.Region;
 import com.google.firebase.FirebaseApp;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -26,10 +26,12 @@ import java.util.UUID;
 
 import static com.n0499010.fypbeacon.Global.firebaseRootRef;
 import static com.n0499010.fypbeacon.Global.getActivity;
+import static com.n0499010.fypbeacon.Global.mFirebaseAuth;
+import static com.n0499010.fypbeacon.Global.mFirebaseUser;
 import static com.n0499010.fypbeacon.Global.mOfferMap;
-import static com.n0499010.fypbeacon.Global.mSharedPreferences;
 import static com.n0499010.fypbeacon.Global.mUid;
 import static com.n0499010.fypbeacon.Global.mUser;
+import static com.n0499010.fypbeacon.Global.notifyIntent;
 import static com.n0499010.fypbeacon.Global.scanDurInterval;
 import static com.n0499010.fypbeacon.Global.scanWaitInterval;
 import static com.n0499010.fypbeacon.Global.userRef;
@@ -43,6 +45,9 @@ import static com.n0499010.fypbeacon.Global.userRef;
 /* Application: Base class for those who need to maintain global application state.
 *  Required for managing Beacons from any Activity in the app. */
 public class MyApplication extends Application {
+
+    SharedPreferences preferences;
+    SharedPreferences.OnSharedPreferenceChangeListener prefListener;
 
     private static final String TAG = "MyApplication";
     private String beaconKey;
@@ -76,11 +81,20 @@ public class MyApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        preferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         /*  Firebase database setup : */
         if (!FirebaseApp.getApps(this).isEmpty()) {
             FirebaseDatabase.getInstance().setPersistenceEnabled(true);
         }
+
+        //mSharedPreferences = getSharedPreferences("com.example.shann.galleriesofjustice", MODE_PRIVATE);
+        preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        preferences.edit().putBoolean("authenticated", false).apply();
+
+        final Intent mainIntent = new Intent(getApplicationContext(), MainActivity.class);
+        final Intent nearbyOffersIntent = new Intent(getApplicationContext(), NearbyProducts.class);
+        final Intent myOffersIntent = new Intent(getApplicationContext(), MyOffers.class);
 
         /* Estimote SDK Initialization : */
         EstimoteSDK.initialize(getApplicationContext(), Global.appID, Global.appToken);
@@ -90,12 +104,14 @@ public class MyApplication extends Application {
         beaconManager = new BeaconManager(getApplicationContext());
         beaconManager.setBackgroundScanPeriod(scanDurInterval, scanWaitInterval);
 
-        mSharedPreferences = getSharedPreferences("com.example.shann.galleriesofjustice", MODE_PRIVATE);
-//        mSharedPreferences.registerOnSharedPreferenceChangeListener(new SharedPreferences.OnSharedPreferenceChangeListener() {
-//            @Override
-//            public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-//
-//                if (mSharedPreferences.getBoolean("authenticated", true) == true) {
+        mFirebaseAuth = FirebaseAuth.getInstance();
+        mFirebaseAuth.addAuthStateListener(new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                mFirebaseUser = mFirebaseAuth.getCurrentUser();
+                if (mFirebaseUser != null) {
+                    // User signed in
+                    Log.d(TAG, "onAuthStateChanged:signed_in:" + mFirebaseUser.getUid());
 
                     beaconManager.connect(new BeaconManager.ServiceReadyCallback() {
                         @Override
@@ -119,11 +135,12 @@ public class MyApplication extends Application {
 
                             if (region == regionAll) {
                                 // Display welcome notiiication when discovering any beacon :
-                                showNotification(
-                                        "Welcome to the store",                             // Title
-                                        "Check out the latest app-only instore offers.",    // Message
-
-                                        MainActivity.class                                  // Context
+                                Global.showNotification(
+                                        getString(R.string.notify_welcome),             // Title
+                                        getString(R.string.notify_welcome_content),     // Message
+                                        nearbyOffersIntent,                             // Notification Intent
+                                        getApplicationContext(),                        // Context
+                                        Global.NOTIFICATION_PRODUCT                     // Notification Type
                                 );
                             } else {
                                 // Note time when region entered
@@ -144,12 +161,12 @@ public class MyApplication extends Application {
 
                                 } else {
                                     Global.showNotification(
-                                            "Product Nearby",
-                                            "Tap to view",
+                                            getString(R.string.notify_product_nearby),
+                                            getString(R.string.notify_product_nearby_content),
                                             overviewIntent,
-                                            getApplicationContext()
+                                            getApplicationContext(),
+                                            Global.NOTIFICATION_PRODUCT
                                     );
-
 //                                    if (region == regionCandy) {
 //                                        showNotification(
 //                                                "Exclusive deals on footwear!",
@@ -166,11 +183,12 @@ public class MyApplication extends Application {
                             Log.d("monitoring: exit", region.toString());
 
                             if (region == regionAll) {
-                                showNotification(
-                                        "Thank you for shopping with us",
-                                        "Check back soon for the latest " +
-                                                "app instore discounts",
-                                        MainActivity.class
+                                Global.showNotification(
+                                        getString(R.string.notify_exit),
+                                        getString(R.string.notify_exit_content),
+                                        notifyIntent,
+                                        getApplicationContext(),
+                                        Global.NOTIFICATION_PRODUCT
                                 );
                             } else {
                                 // get duration of visit
@@ -178,8 +196,9 @@ public class MyApplication extends Application {
 
                                 beaconKey = String.format("%d:%d", region.getMajor(), region.getMinor());
                                 BeaconData beaconData = beaconDataMap.get(beaconKey);
-                                try { beaconData.settEnd(tEnd); }
-                                catch (Exception exception) {
+                                try {
+                                    beaconData.settEnd(tEnd);
+                                } catch (Exception exception) {
                                     //
                                 }
 
@@ -189,33 +208,69 @@ public class MyApplication extends Application {
                         }
                     }); //!setMonitoringListener
 
-//                }
-//            }
-//        });
+                    // Listen for change in user's personal offers, notify when new offer received
+                    if (mUid != null) {
+                        //Query userOfferRef = userRef.child(mUid).child("offers").limitToLast(1);
+//                        DatabaseReference userOfferRef = userRef.child(mUid).child("offers");
+//                        userOfferRef.addChildEventListener(new ChildEventListener() {
+//                            @Override
+//                            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+//                                // Notify user of new offer
+//                                //if ( s != null ) {
+//                                    List<String> offerList = mUser.getOfferList();
+//                                    for (String userOffer : offerList) {
+//                                        if (userOffer.equals(dataSnapshot.getKey())) {
+//                                            Global.showNotification(
+//                                                    "New personal offer! " + dataSnapshot.getKey(),
+//                                                    "Tap to view your offers",
+//                                                    myOffersIntent,
+//                                                    getApplicationContext(),
+//                                                    Global.NOTIFICATION_OFFER
+//                                            );
+//                                        }
+//                                    }
+//
+//                                //}
+//                            }
+//
+//                            @Override
+//                            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+//
+//                            }
+//
+//                            @Override
+//                            public void onChildRemoved(DataSnapshot dataSnapshot) {
+//
+//                            }
+//
+//                            @Override
+//                            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+//
+//                            }
+//
+//                            @Override
+//                            public void onCancelled(DatabaseError databaseError) {
+//
+//                            }
+//                        });
+                    }
+                } else {
+                    // User is signed out
+                    Log.d(TAG, "onAuthStateChanged:signed_out");
 
-        if (mUid != null) {
-            DatabaseReference userOfferRef = userRef.child(mUid).child("offers");
-            userOfferRef.addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-
-
+                    beaconManager.disconnect();
                 }
+            }
+        });
 
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-
-                }
-            });
-        }
-
+        // Populate container with offer details from database
         DatabaseReference offerRef = firebaseRootRef.child("offers");
         offerRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot child : dataSnapshot.getChildren()) {
                     Offer offer = new Offer(child.getKey(), (String) child.getValue());
-                    mOfferMap.offerMap.put(child.getKey(),offer);
+                    mOfferMap.offerMap.put(child.getKey(), offer);
                 }
             }
 
@@ -224,6 +279,7 @@ public class MyApplication extends Application {
 
             }
         });
+
     }
 
     /* Get Value from database for provided beacon key, if no value use default */
@@ -262,8 +318,9 @@ public class MyApplication extends Application {
 
         long tDelta = 0;
         // Calculate elapsed time :
-        try { tDelta = beaconData.gettEnd() - beaconData.gettStart(); }
-        catch (Exception exception) {
+        try {
+            tDelta = beaconData.gettEnd() - beaconData.gettStart();
+        } catch (Exception exception) {
             //TODO: exception handling
         }
         double elapsedSeconds = tDelta / 1000.0;
@@ -284,7 +341,6 @@ public class MyApplication extends Application {
     }
 
     public void recordBeaconVisit(String key) {
-
         final String bKey = key;
         // Record user's beacon visit in database :
         final DatabaseReference mUserRef = userRef.child(mUser.getuID());
@@ -312,26 +368,5 @@ public class MyApplication extends Application {
 
             }
         });
-    }
-
-    //TODO: Use either this or Global method
-    /* Add a notification to show up whenever user enters the range of monitored beacon */
-    public void showNotification(String title, String message, Class intentActivityClass) {
-
-        Intent notificationIntent = new Intent(this, intentActivityClass);
-        notificationIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        PendingIntent pendingIntent = PendingIntent.getActivities(this, 0, new Intent[]{notificationIntent}, PendingIntent.FLAG_UPDATE_CURRENT);
-
-        Notification notification = new Notification.Builder(this)
-                .setSmallIcon(android.R.drawable.ic_dialog_info)
-                .setContentTitle(title)
-                .setContentText(message)
-                .setAutoCancel(true)
-                .setContentIntent(pendingIntent)
-                .build();
-        notification.defaults |= Notification.DEFAULT_SOUND;
-        NotificationManager notificationManager =
-                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        notificationManager.notify(1, notification);
     }
 }

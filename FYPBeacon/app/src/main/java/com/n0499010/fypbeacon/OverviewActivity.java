@@ -123,13 +123,21 @@ public class OverviewActivity extends AppCompatActivity {
         wishlistRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                if ( (dataSnapshot.child(item.getTitle()).getValue()) == null  ) {
-                    // not in wishlist
-                    fabWishlist.setImageResource(android.R.drawable.star_off);
-                    inWishlist = false;
-                } else {
-                    fabWishlist.setImageResource(android.R.drawable.btn_star_big_on);
-                    inWishlist = true;
+                if ( dataSnapshot != null ) {
+                    if ( dataSnapshot.hasChildren() ) {
+                        if (dataSnapshot.hasChild(item.getTitle())) {
+                            // item in wishlist
+                            fabWishlist.setImageResource(android.R.drawable.btn_star_big_on);
+                            inWishlist = true;
+                        } else {
+                            // item not in wishlist
+                            fabWishlist.setImageResource(android.R.drawable.star_off);
+                            inWishlist = false;
+                        }
+                    } else {
+                        fabWishlist.setImageResource(android.R.drawable.star_off);
+                        inWishlist = false;
+                    }
                 }
             }
 

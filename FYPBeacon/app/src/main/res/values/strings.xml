@@ -8,4 +8,18 @@
     <string name="toast_text_wishlist_remove">Item Removed</string>
     <string name="label_my_offers">My Offers</string>
     <string name="wishlist_remove">Removed from Wishlist</string>
+    <string name="send_intent_email_to">n0499010@my.ntu.ac.uk</string>
+    <string name="send_intent_email_subject">App Feedback</string>
+    <string name="app_feedback_text">Here is my feedback...</string>
+    <string name="share_chooser_text">Send feedback using...</string>
+    <string name="notify_product_nearby">Product Nearby</string>
+    <string name="notify_product_nearby_content">Tap to view</string>
+    <string name="notify_exit">Thank you for shopping with us</string>
+    <string name="notify_exit_content">Tap to leave feedback</string>
+    <string name="notify_welcome">Welcome to the store</string>
+    <string name="notify_welcome_content">Check out the latest app-exlusive instore offers</string>
+    <string name="label_nearby_products">Nearby Products</string>
+    <string name="label_leave_feedback">Leave Feedback</string>
+    <string name="label_sign_out">Sign Out</string>
+    <string name="label_my_account">My Account</string>
 </resources>

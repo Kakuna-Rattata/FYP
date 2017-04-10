@@ -37,8 +37,8 @@
             android:launchMode="singleTask"
             android:parentActivityName=".MainActivity" />
         <activity
-            android:name=".NearbyOffers"
-            android:label="@string/label_nearby_offers"
+            android:name=".NearbyProducts"
+            android:label="@string/label_nearby_products"
             android:launchMode="singleTask"
             android:parentActivityName=".MainActivity" />
         <activity

@@ -1,6 +1,7 @@
 package com.n0499010.fypbeacon;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
@@ -23,6 +24,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,14 +33,21 @@ import static com.n0499010.fypbeacon.Global.mFirebaseAuth;
 import static com.n0499010.fypbeacon.Global.mFirebaseUser;
 import static com.n0499010.fypbeacon.Global.mGoogleApiClient;
 import static com.n0499010.fypbeacon.Global.mPhotoUrl;
-import static com.n0499010.fypbeacon.Global.mSharedPreferences;
 import static com.n0499010.fypbeacon.Global.mUid;
 import static com.n0499010.fypbeacon.Global.mUser;
 import static com.n0499010.fypbeacon.Global.mUsername;
 import static com.n0499010.fypbeacon.Global.userRef;
 
+/*
+ * OnShareClick method code adapted from source :
+ * http://stackoverflow.com/questions/9730243/how-to-filter-specific-apps-for-action-send-intent-and-set-a-different-text-for
+ */
 public class MainActivity extends AppCompatActivity
         implements GoogleApiClient.OnConnectionFailedListener {
+
+    SharedPreferences preferences;
+
+    Intent myOffersIntent;
 
     /* Layout Elements */
     private Button buttonAccount;
@@ -56,7 +65,9 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        preferences = PreferenceManager.getDefaultSharedPreferences(this);
+
+        myOffersIntent = new Intent(this, MyOffers.class);
 
         buttonAccount = (Button) findViewById(R.id.button_account);
         buttonWishlist = (Button) findViewById(R.id.button_wishlist);
@@ -86,11 +97,10 @@ public class MainActivity extends AppCompatActivity
             if (mFirebaseUser.getPhotoUrl() != null) {
                 mPhotoUrl = mFirebaseUser.getPhotoUrl().toString();
             }
-            mSharedPreferences.edit().putBoolean("authenticated", true).apply();
+            preferences.edit().putBoolean("authenticated", true).apply();
 
             //TODO: Call initialiseApp method
 
-            //TODO: Call initialiseAccount method
             initialiseAccount(mUid);
         }
 
@@ -113,7 +123,7 @@ public class MainActivity extends AppCompatActivity
         buttonNearbyOffers.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(getApplicationContext(), NearbyOffers.class));
+                startActivity(new Intent(getApplicationContext(), NearbyProducts.class));
             }
         });
 
@@ -127,18 +137,14 @@ public class MainActivity extends AppCompatActivity
         buttonFeedback.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //TODO: Feedback button
+                Global.onShareClick(getApplicationContext());
             }
         });
 
         buttonSignOut.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                mFirebaseAuth.signOut();
-                Auth.GoogleSignInApi.signOut(mGoogleApiClient);
-                mUsername = ANONYMOUS;
-                startActivity(new Intent(getApplicationContext(), SignInActivity.class));
+                signOut();
             }
         });
     }
@@ -156,19 +162,29 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.hasChild(mUser.getuID())) {
-                    // if Uid already exists, add 'OF_Return' offer:
-                    // add as key under user's 'offer's node, set value to 'true'
-                    Map<String,String> userData = new HashMap<String, String>();
-                    userData.put("OF_Return", "true");
+                    if (dataSnapshot.child(mUser.getuID()).hasChild("offers")) {
+                        // if Uid and 'offers' nodes already exist, add 'OF_Return' offer:
+                        // add as key under user's 'offer's node, set value to 'true'
+                        Map<String, String> userData = new HashMap<String, String>();
+                        userData.put("OF_Return", "true");
 
-                    DatabaseReference mUserRef = userRef;
-                    mUserRef = userRef.child(mUser.getuID()).child("offers");
-                    mUserRef.child("OF_Return").setValue("true");
+                        ArrayList<String> uList = new ArrayList<String>();
+                        uList.add("OF_Return");
+                        mUser.setOfferList(uList);
+
+                        DatabaseReference mUserRef = userRef;
+                        mUserRef = userRef.child(mUser.getuID()).child("offers");
+                        mUserRef.child("OF_Return").setValue("true");
+                    }
                 } else {
                     // if Uid not present, write value to db as new key under 'user' as root node
                     Map<String,String> userData = new HashMap<String, String>();
                     //TODO: get offers from database, save to global offer list on sign-in
                     userData.put("OF_Welcome", "true");
+
+                    ArrayList<String> uList = new ArrayList<String>();
+                    uList.add("OF_Welcome");
+                    mUser.setOfferList(uList);
 
                     DatabaseReference mUserRef = userRef;
                     // Add new UID, under Uid node, add 'offers' node
@@ -195,14 +211,20 @@ public class MainActivity extends AppCompatActivity
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.sign_out_menu:
-                mFirebaseAuth.signOut();
-                Auth.GoogleSignInApi.signOut(mGoogleApiClient);
-                mUsername = ANONYMOUS;
-                startActivity(new Intent(this, SignInActivity.class));
+                signOut();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    public void signOut() {
+        mFirebaseAuth.signOut();
+        Auth.GoogleSignInApi.signOut(mGoogleApiClient);
+
+        preferences.edit().putBoolean("authenticated", false).apply();
+        mUsername = ANONYMOUS;
+        startActivity(new Intent(getApplicationContext(), SignInActivity.class));
     }
 
     @Override

@@ -23,9 +23,10 @@ import java.util.List;
 import java.util.Map;
 
 import static com.n0499010.fypbeacon.Global.itemRef;
+import static com.n0499010.fypbeacon.Global.mFirebaseAuth;
 import static com.n0499010.fypbeacon.MyApplication.regionAll;
 
-public class NearbyOffers extends AppCompatActivity {
+public class NearbyProducts extends AppCompatActivity {
 
     //  Declare UI elements :
     private ListView mListView;
@@ -67,56 +68,62 @@ public class NearbyOffers extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_nearby_offers);
 
-        mListView = (ListView) findViewById(R.id.listView_items);
-        button = (Button) findViewById(R.id.btn);
+        if (mFirebaseAuth.getCurrentUser() == null) {
+            startActivity(new Intent(this, SignInActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+            finish();
+        } else {
 
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+            mListView = (ListView) findViewById(R.id.listView_items);
+            button = (Button) findViewById(R.id.btn);
 
-                Intent intent = new Intent(getApplicationContext(), ItemListActivity.class);
-                startActivity(intent);
-            }
-        });
+            button.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
 
-        FirebaseListAdapter<String> firebaseListAdapter = new FirebaseListAdapter<String>(
-                this,
-                String.class,
-                android.R.layout.simple_list_item_1,
-                itemRef
-        ) {
-            @Override
-            protected void populateView(View v, String model, int position) {
-
-                TextView textView = (TextView) v.findViewById(android.R.id.text1);
-                textView.setText(model);
-            }
-        };
-        mListView.setAdapter(firebaseListAdapter);
-
-        beaconManager = new BeaconManager(getApplicationContext());
-
-        final ArrayAdapter adapter = new ArrayAdapter<String>(this, R.layout.activity_listview, itemArrayList);
-        mListView.setAdapter(adapter);
-
-        beaconManager.setRangingListener(new BeaconManager.RangingListener() {
-            @Override
-            public void onBeaconsDiscovered(Region region, List<Beacon> list) {
-
-                if (!list.isEmpty()) {
-
-                    Beacon nearestBeacon = list.get(0);     // List already ordered nearest first
-                    List<String> places = Global.itemsNearBeacon(nearestBeacon, PLACES_BY_BEACONS);
-
-                    Log.d("Store", "Nearest places: " + places);
-
-                    // Update UI:
-                    adapter.clear();
-                    adapter.addAll(places);
-                    adapter.notifyDataSetChanged();
+                    Intent intent = new Intent(getApplicationContext(), ItemListActivity.class);
+                    startActivity(intent);
                 }
-            }
-        });
+            });
+
+            FirebaseListAdapter<String> firebaseListAdapter = new FirebaseListAdapter<String>(
+                    this,
+                    String.class,
+                    android.R.layout.simple_list_item_1,
+                    itemRef
+            ) {
+                @Override
+                protected void populateView(View v, String model, int position) {
+
+                    TextView textView = (TextView) v.findViewById(android.R.id.text1);
+                    textView.setText(model);
+                }
+            };
+            mListView.setAdapter(firebaseListAdapter);
+
+            beaconManager = new BeaconManager(getApplicationContext());
+
+            final ArrayAdapter adapter = new ArrayAdapter<String>(this, R.layout.activity_listview, itemArrayList);
+            mListView.setAdapter(adapter);
+
+            beaconManager.setRangingListener(new BeaconManager.RangingListener() {
+                @Override
+                public void onBeaconsDiscovered(Region region, List<Beacon> list) {
+
+                    if (!list.isEmpty()) {
+
+                        Beacon nearestBeacon = list.get(0);     // List already ordered nearest first
+                        List<String> places = Global.itemsNearBeacon(nearestBeacon, PLACES_BY_BEACONS);
+
+                        Log.d("Store", "Nearest places: " + places);
+
+                        // Update UI:
+                        adapter.clear();
+                        adapter.addAll(places);
+                        adapter.notifyDataSetChanged();
+                    }
+                }
+            });
+        }
     }
 
     @Override

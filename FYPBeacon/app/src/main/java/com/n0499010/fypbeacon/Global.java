@@ -6,7 +6,10 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
+import android.content.pm.LabeledIntent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import android.content.res.Resources;
 
 import com.estimote.sdk.Beacon;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -18,9 +21,12 @@ import com.google.firebase.storage.FirebaseStorage;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
+import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 
 /**
  * Created by Shannon Hibbett (N0499010) on 29/03/2017.
@@ -28,14 +34,13 @@ import java.util.Map;
  * Some code developed during previous Mobile Platform Development module assignment has been reused:
  * showNotification method, getActivity method
  *
- * TODO: find & cite getActivity method source
+ * TODO: find & cite getActivity method source, showNotification method
  */
 
 public class Global {
 
-    //private static final String TAG = getActivity().toString();
     /*  App Values for Global Access :  */
-    public static SharedPreferences mSharedPreferences;
+    //private static final String TAG = getActivity().toString();
 
     /*  Firebase Database : */
     public static final String FIREBASE_URL = "https://beacon-fyp-project.firebaseio.com/";
@@ -71,15 +76,17 @@ public class Global {
     public static long scanDurInterval = 5000;
     public static long scanWaitInterval = 3000;
 
-    public static Intent notifyIntent;
-
     public static OfferMap mOfferMap = new OfferMap();
 
+    public static final int NOTIFICATION_PRODUCT = 1;
+    public static final int NOTIFICATION_OFFER = 2;
+    public static Intent notifyIntent;
+
     /*  App Global Access Methods :    */
-    public static void showNotification(String title, String message, Intent notificationIntent, Context context) {
+    public static void showNotification(
+            String title, String message, Intent notificationIntent, Context context, int notificationID) {
 
         if ( notificationIntent != null ) {
-
             notificationIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
             PendingIntent pendingIntent = PendingIntent.getActivities(
                     context, 0, new Intent[] {notificationIntent}, PendingIntent.FLAG_UPDATE_CURRENT);
@@ -95,7 +102,7 @@ public class Global {
             notification.defaults |= Notification.DEFAULT_SOUND;
             NotificationManager notificationManager =
                     (NotificationManager) context.getSystemService(context.NOTIFICATION_SERVICE);
-            notificationManager.notify(1, notification);
+            notificationManager.notify(notificationID, notification);
         }
     }
 
@@ -109,6 +116,47 @@ public class Global {
             return stringListMap.get(beaconKey);
         }
         return Collections.emptyList();
+    }
+
+    public static void onShareClick(Context context) {
+        Resources resources = context.getResources();
+
+        Intent emailIntent = new Intent();
+        emailIntent.setAction(Intent.ACTION_SEND);
+        emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[] {resources.getString(R.string.send_intent_email_to)});
+        emailIntent.putExtra(Intent.EXTRA_SUBJECT, resources.getString(R.string.send_intent_email_subject));
+        emailIntent.putExtra(Intent.EXTRA_TEXT, resources.getString(R.string.app_feedback_text));
+        emailIntent.setType("message/rfc822");
+
+        PackageManager pm = context.getPackageManager();
+        Intent sendIntent = new Intent(Intent.ACTION_SEND);
+        sendIntent.setType("text/plain");
+
+        Intent openInChooser = Intent.createChooser(emailIntent, resources.getString(R.string.share_chooser_text));
+
+        List<ResolveInfo> resInfo = pm.queryIntentActivities(sendIntent, 0);
+        List<LabeledIntent> intentList = new ArrayList<LabeledIntent>();
+
+        for (int i = 0; i < resInfo.size(); i++) {
+            // Extract the label, append it, and repackage it in a LabeledIntent
+            ResolveInfo ri = resInfo.get(i);
+            String packageName = ri.activityInfo.packageName;
+            if (packageName.contains("android.email")) {
+                emailIntent.setPackage(packageName);
+            }
+        }
+
+        // convert intentList to array
+        LabeledIntent[] extraIntents = intentList.toArray( new LabeledIntent[ intentList.size() ]);
+
+        openInChooser.putExtra(Intent.EXTRA_INITIAL_INTENTS, extraIntents);
+
+        notifyIntent = new Intent();
+        notifyIntent = openInChooser;
+
+        notifyIntent.setFlags(FLAG_ACTIVITY_NEW_TASK);
+
+        context.startActivity(openInChooser);
     }
 
     public static Activity getActivity() {
@@ -170,37 +218,4 @@ public class Global {
 
         return null;
     }
-
-    //TODO logout Global
-//    public void logout(Context LogoutActivity, Context LoginActivity) {
-//        final Context logout = LogoutActivity;
-//        final Context login = LoginActivity;
-//
-//        mGoogleApiClient.connect();
-//        mGoogleApiClient.registerConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
-//            @Override
-//            public void onConnected(@Nullable Bundle bundle) {
-//
-//                FirebaseAuth.getInstance().signOut();
-//                if(mGoogleApiClient.isConnected()) {
-//                    Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(new ResultCallback<Status>() {
-//                        @Override
-//                        public void onResult(@NonNull Status status) {
-//                            if (status.isSuccess()) {
-//                                Log.d(TAG, "User Logged out");
-//                                Intent intent = new Intent(getActivity(), login.getClass());
-//                                getActivity().startActivity(intent);
-//                                getActivity().finish();
-//                            }
-//                        }
-//                    });
-//                }
-//            }
-//
-//            @Override
-//            public void onConnectionSuspended(int i) {
-//                Log.d(getActivity().toString(), "Google API Client Connection Suspended");
-//            }
-//        });
-//    }
 }
