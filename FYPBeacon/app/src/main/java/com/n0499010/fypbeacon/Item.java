@@ -18,6 +18,8 @@ public class Item implements Serializable {
     private String desc;
     private String price;
 
+    private String category;
+
     // Required default constructor for Firebase object mapping
     @SuppressWarnings("unused")
     public Item() {
@@ -89,4 +91,11 @@ public class Item implements Serializable {
         this.price = price;
     }
 
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
 }

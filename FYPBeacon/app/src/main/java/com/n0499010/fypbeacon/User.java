@@ -3,6 +3,7 @@ package com.n0499010.fypbeacon;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by N0499010 Shannon Hibbett on 04/04/2017.
@@ -16,8 +17,7 @@ public class User implements Serializable {
     private List<String> offerList;
     private ArrayList<Item> wishlist;
 
-//    private Map<String,Map<String,String>> beaconsVisited;
-//    private Map<String,String> noVisitsMap;
+    private Map<String, String> beaconsVisited;
 
     public User() {
 
@@ -53,5 +53,13 @@ public class User implements Serializable {
 
     public void setOfferList(List<String> offerList) {
         this.offerList = offerList;
+    }
+
+    public Map<String, String> getBeaconsVisited() {
+        return beaconsVisited;
+    }
+
+    public void setBeaconsVisited(Map<String, String> beaconsVisited) {
+        this.beaconsVisited = beaconsVisited;
     }
 }

@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.estimote.sdk.Beacon;
 import com.estimote.sdk.BeaconManager;
@@ -26,12 +27,14 @@ import java.util.UUID;
 
 import static com.n0499010.fypbeacon.Global.firebaseRootRef;
 import static com.n0499010.fypbeacon.Global.getActivity;
+import static com.n0499010.fypbeacon.Global.mBeaconDataMap;
 import static com.n0499010.fypbeacon.Global.mFirebaseAuth;
 import static com.n0499010.fypbeacon.Global.mFirebaseUser;
 import static com.n0499010.fypbeacon.Global.mOfferMap;
 import static com.n0499010.fypbeacon.Global.mUid;
 import static com.n0499010.fypbeacon.Global.mUser;
 import static com.n0499010.fypbeacon.Global.notifyIntent;
+import static com.n0499010.fypbeacon.Global.offersRef;
 import static com.n0499010.fypbeacon.Global.scanDurInterval;
 import static com.n0499010.fypbeacon.Global.scanWaitInterval;
 import static com.n0499010.fypbeacon.Global.userRef;
@@ -76,7 +79,7 @@ public class MyApplication extends Application {
             UUID.fromString("B9407F30-F5F8-466E-AFF9-25556B57FE6D"),
             17236, 25458);
 
-    Map<String, BeaconData> beaconDataMap = new HashMap<String, BeaconData>();
+    //Map<String, BeaconData> beaconDataMap = new HashMap<String, BeaconData>();
 
     @Override
     public void onCreate() {
@@ -147,7 +150,7 @@ public class MyApplication extends Application {
                                 tStart = System.currentTimeMillis();
                                 BeaconData beaconData = new BeaconData(beaconKey, region);
                                 beaconData.settStart(tStart);
-                                beaconDataMap.put(beaconData.getMmKey(), beaconData);
+                                mBeaconDataMap.put(beaconData.getMmKey(), beaconData);
 
                                 Intent overviewIntent = new Intent(getApplicationContext(), OverviewActivity.class);
                                 overviewIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -195,7 +198,7 @@ public class MyApplication extends Application {
                                 tEnd = System.currentTimeMillis();
 
                                 beaconKey = String.format("%d:%d", region.getMajor(), region.getMinor());
-                                BeaconData beaconData = beaconDataMap.get(beaconKey);
+                                BeaconData beaconData = mBeaconDataMap.get(beaconKey);
                                 try {
                                     beaconData.settEnd(tEnd);
                                 } catch (Exception exception) {
@@ -263,14 +266,16 @@ public class MyApplication extends Application {
             }
         });
 
-        // Populate container with offer details from database
+        // Populate offer criteria container with offer details from database
         DatabaseReference offerRef = firebaseRootRef.child("offers");
         offerRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot child : dataSnapshot.getChildren()) {
-                    Offer offer = new Offer(child.getKey(), (String) child.getValue());
-                    mOfferMap.offerMap.put(child.getKey(), offer);
+                    if ( !(child.getKey().equals("criteria")) ) {
+                        Offer offer = new Offer(child.getKey(), (String) child.getValue());
+                        mOfferMap.offerMap.put(child.getKey(), offer);
+                    }
                 }
             }
 
@@ -314,7 +319,7 @@ public class MyApplication extends Application {
 
         double timeDouble = Double.parseDouble(timeSpent);
 
-        BeaconData beaconData = beaconDataMap.get(key);
+        BeaconData beaconData = mBeaconDataMap.get(key);
 
         long tDelta = 0;
         // Calculate elapsed time :
@@ -333,11 +338,63 @@ public class MyApplication extends Application {
         String updatedTimeSpent = String.valueOf(cumulativeTime);
 
         beaconData.setTimeSpent(updatedTimeSpent);
-        //beaconDataMap.put(beaconData.getMmKey(), beaconData);
 
         dataset.put("timeSpent", updatedTimeSpent);
 
         return dataset;
+    }
+
+    public void checkOfferCriteriaMet(String key) {
+        final String bKey = key;
+
+        final DatabaseReference criteriaRef = offersRef.child("criteria");
+
+        criteriaRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+
+                for ( Map.Entry<String, String> userEntry : mUser.getBeaconsVisited().entrySet() ) {
+                    // For each user beaconVisited data entry
+                    if ( dataSnapshot.hasChild(userEntry.getKey()) ) {
+                        DataSnapshot ref = dataSnapshot.child(userEntry.getKey());
+                        for (DataSnapshot child : ref.getChildren()) {
+                            if ( child.getValue().equals(userEntry.getValue()) ) {
+                                // visit value meets criteria value, update users offers
+                                Toast.makeText(getApplicationContext(),
+                                        "New Offer",
+                                        Toast.LENGTH_SHORT).show();
+
+                                // get category using beacon key
+                                BeaconData beaconData = mBeaconDataMap.get(bKey);
+                                String cat = beaconData.getCategory();
+
+                                // create offerID using 'OF_' prefix
+                                String offID = "OF_" + cat;
+
+                                // get user's current offer list
+                                List<String> offList = mUser.getOfferList();
+
+                                // append to
+                                offList.add(offID);
+
+                                // set updated offer list
+                                mUser.setOfferList(offList);
+
+                                // write offer list to db
+                                DatabaseReference userOffersRef = userRef.child(mUser.getuID()).child("offers");
+                                userOffersRef.child(offID).setValue("true");
+                            }
+                        }
+                    }
+                }
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
     public void recordBeaconVisit(String key) {
@@ -361,6 +418,8 @@ public class MyApplication extends Application {
                 beaconVisitedData = updateTimeSpent(bKey, beaconVisitedData, dataSnapshot);
 
                 mBeaconVisitRef.child(bKey).setValue(beaconVisitedData);
+
+                mUser.setBeaconsVisited(beaconVisitedData);
             }
 
             @Override
@@ -368,5 +427,8 @@ public class MyApplication extends Application {
 
             }
         });
+
+        // Check against offer criteria
+        checkOfferCriteriaMet(bKey);
     }
 }

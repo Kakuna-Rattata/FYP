@@ -45,10 +45,12 @@ public class MyOffers extends AppCompatActivity {
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     for (DataSnapshot child : dataSnapshot.getChildren()) {
                         if (child.getValue().equals("true")) {
-                            Offer offer = mOfferMap.offerMap.get(child.getKey());
+                            if (mOfferMap.offerMap.size() > 0) {
+                                Offer offer = mOfferMap.offerMap.get(child.getKey());
 
-                            offDescList.add(offer.getOfferID() + ": " + offer.getOfferDesc());
-                            mUser.setOfferList(offDescList);
+                                offDescList.add(offer.getOfferID() + ": " + offer.getOfferDesc());
+                                mUser.setOfferList(offDescList);
+                            }
                         }
                     }
                 }

@@ -12,6 +12,8 @@ public class BeaconData {
 
     private Region region;
 
+    private String category;
+
     private String noVisits;
     private String timeSpent;
 
@@ -78,5 +80,13 @@ public class BeaconData {
 
     public void settEnd(long tEnd) {
         this.tEnd = tEnd;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
     }
 }

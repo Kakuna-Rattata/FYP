@@ -20,6 +20,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.StorageReference;
 
 import static com.n0499010.fypbeacon.Global.beaconRef;
+import static com.n0499010.fypbeacon.Global.mBeaconDataMap;
 import static com.n0499010.fypbeacon.Global.mUser;
 import static com.n0499010.fypbeacon.Global.storageInstance;
 import static com.n0499010.fypbeacon.Global.userRef;
@@ -76,7 +77,7 @@ public class OverviewActivity extends AppCompatActivity {
         {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                String imgName = null, title = null, desc = null, price = null;
+                String imgName = null, title = null, desc = null, price = null, category = null;
                 if (dataSnapshot.getValue() != null) {
 
                     item.setKey(beaconKey);
@@ -98,6 +99,11 @@ public class OverviewActivity extends AppCompatActivity {
                             price = child.getValue().toString();
                             item.setPrice(price);
                         }
+                        if (child.getKey().equals("category")) {
+                            category = child.getValue().toString();
+                            item.setCategory(category);
+                        }
+
                     }
 
                     setTitle(title);
@@ -110,6 +116,8 @@ public class OverviewActivity extends AppCompatActivity {
                     textViewTitle.setText(title);
                     textViewPrice.setText(price);
                     textViewDesc.setText(desc);
+
+                    mBeaconDataMap.get(beaconKey).setCategory(category);
                 }
             }
 
