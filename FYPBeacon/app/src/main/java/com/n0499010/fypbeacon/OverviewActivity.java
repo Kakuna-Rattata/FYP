@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -19,11 +20,14 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.StorageReference;
 
+import java.util.ArrayList;
+
 import static com.n0499010.fypbeacon.Global.beaconRef;
 import static com.n0499010.fypbeacon.Global.mBeaconDataMap;
 import static com.n0499010.fypbeacon.Global.mUser;
 import static com.n0499010.fypbeacon.Global.storageInstance;
 import static com.n0499010.fypbeacon.Global.userRef;
+import static java.sql.Types.NULL;
 //import static com.n0499010.fypbeacon.Global.retailImageRef;
 
 /**
@@ -38,11 +42,13 @@ public class OverviewActivity extends AppCompatActivity {
     private TextView textViewDesc;
     private FloatingActionButton fabWishlist;
     private FloatingActionButton fabComment;
+    private RatingBar ratingBar;
 
     String beaconKey;
     Bundle extras;
 
     Boolean inWishlist = false;
+    float userRating = NULL;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,9 +62,7 @@ public class OverviewActivity extends AppCompatActivity {
         textViewDesc = (TextView) findViewById(R.id.textView_desc);
         fabWishlist = (FloatingActionButton) findViewById(R.id.fab_wishlist);
         fabComment = (FloatingActionButton) findViewById(R.id.fab_comment);
-
-        final DatabaseReference mUserRef = userRef.child(mUser.getuID());
-        final DatabaseReference wishlistRef = mUserRef.child("wishlist");
+        ratingBar = (RatingBar) findViewById(R.id.ratingBar);
 
         //  Get beaconKey passed from triggering Intent :
         extras = getIntent().getExtras();
@@ -71,6 +75,10 @@ public class OverviewActivity extends AppCompatActivity {
         //final StorageReference retailImageRef = imageRootRef.child(STORAGE_RETAIL);
         final StorageReference retailImageRef = imageRootRef.child("Retail_images");
         final Item item = new Item();
+
+        final DatabaseReference mUserRef = userRef.child(mUser.getuID());
+        final DatabaseReference wishlistRef = mUserRef.child("wishlist");
+        final DatabaseReference itemRatingRef = beaconRef.child(beaconKey).child("userRating");
 
         //  Query database for page content to set UI :
         beaconRef.child(beaconKey).addListenerForSingleValueEvent(new ValueEventListener()
@@ -131,7 +139,7 @@ public class OverviewActivity extends AppCompatActivity {
         wishlistRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                if ( dataSnapshot != null ) {
+                if ( !(dataSnapshot.equals(null)) ) {
                     if ( dataSnapshot.hasChildren() ) {
                         if (dataSnapshot.hasChild(item.getTitle())) {
                             // item in wishlist
@@ -155,10 +163,44 @@ public class OverviewActivity extends AppCompatActivity {
             }
         });
 
+        ratingBar.setOnRatingBarChangeListener(new RatingBar.OnRatingBarChangeListener() {
+            @Override
+            public void onRatingChanged(RatingBar ratingBar, float rating, boolean fromUser) {
+
+                if (fromUser) {
+                    userRating = rating;
+
+                    // Add User DisplayName key and numerical rating as value
+                    if (userRating != NULL) {
+                        itemRatingRef.child(mUser.getuID()).setValue(String.valueOf(userRating));
+                    }
+                }
+            }
+        });
+
         fabComment.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //TODO: Leave item comment
+                // Refer to 'userRating' node under beacon > [beaconkey] node
+                DatabaseReference itemRatingRef = beaconRef.child(beaconKey).child("userRating");
+
+                // Add User DisplayName key and numerical rating as value
+                if (userRating != NULL) {
+                    itemRatingRef.child(mUser.getDisplayName()).setValue(String.valueOf(userRating));
+                }
+
+                itemRatingRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
             }
         });
 
@@ -192,6 +234,40 @@ public class OverviewActivity extends AppCompatActivity {
                 }
             }
         });
+
+        itemRatingRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                // get user ratings for item from db
+                final ArrayList<Float> ratingArray = new ArrayList<Float>();
+                for (DataSnapshot child : dataSnapshot.getChildren()) {
+                    ratingArray.add(Float.parseFloat(child.getValue().toString()));
+                }
+
+                // recalculate average
+                item.setRating(calculateAverageRating(ratingArray));
+
+                //  display average
+                ratingBar.setRating(item.getRating());
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    float calculateAverageRating(ArrayList<Float> ratings) {
+        float result = NULL;
+
+        for (Float rating : ratings) {
+            result += rating;
+        }
+
+        result /= ratings.size();
+
+        return result;
     }
 
     @Override

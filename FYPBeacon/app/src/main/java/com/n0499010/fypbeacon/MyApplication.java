@@ -6,7 +6,6 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.estimote.sdk.Beacon;
 import com.estimote.sdk.BeaconManager;
@@ -97,7 +96,6 @@ public class MyApplication extends Application {
 
         final Intent mainIntent = new Intent(getApplicationContext(), MainActivity.class);
         final Intent nearbyOffersIntent = new Intent(getApplicationContext(), NearbyProducts.class);
-        final Intent myOffersIntent = new Intent(getApplicationContext(), MyOffers.class);
 
         /* Estimote SDK Initialization : */
         EstimoteSDK.initialize(getApplicationContext(), Global.appID, Global.appToken);
@@ -170,13 +168,6 @@ public class MyApplication extends Application {
                                             getApplicationContext(),
                                             Global.NOTIFICATION_PRODUCT
                                     );
-//                                    if (region == regionCandy) {
-//                                        showNotification(
-//                                                "Exclusive deals on footwear!",
-//                                                "Select to view - here only!",
-//                                                ItemListActivity.class      //TODO: Deal page
-//                                        );
-//                                    }
                                 }
                             }
                         }   //!OnEnteredRegion
@@ -360,9 +351,6 @@ public class MyApplication extends Application {
                         for (DataSnapshot child : ref.getChildren()) {
                             if ( child.getValue().equals(userEntry.getValue()) ) {
                                 // visit value meets criteria value, update users offers
-                                Toast.makeText(getApplicationContext(),
-                                        "New Offer",
-                                        Toast.LENGTH_SHORT).show();
 
                                 // get category using beacon key
                                 BeaconData beaconData = mBeaconDataMap.get(bKey);
@@ -383,6 +371,15 @@ public class MyApplication extends Application {
                                 // write offer list to db
                                 DatabaseReference userOffersRef = userRef.child(mUser.getuID()).child("offers");
                                 userOffersRef.child(offID).setValue("true");
+
+                                final Intent myOffersIntent = new Intent(getApplicationContext(), MyOffers.class);
+                                Global.showNotification(
+                                        "New personal offer! " + dataSnapshot.getKey(),
+                                        "Tap to view your offers",
+                                        myOffersIntent,
+                                        getApplicationContext(),
+                                        Global.NOTIFICATION_OFFER
+                                );
                             }
                         }
                     }
