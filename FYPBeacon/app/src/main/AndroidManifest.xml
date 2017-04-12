@@ -25,11 +25,12 @@
         </activity>
         <activity
             android:name=".ItemListActivity"
-            android:launchMode="singleTask"
+            android:launchMode="standard"
             android:parentActivityName=".MainActivity" />
         <activity
             android:name=".OverviewActivity"
-            android:launchMode="singleTop" />
+            android:launchMode="singleTask"
+            android:parentActivityName=".MainActivity" />
         <activity android:name=".SignInActivity" />
         <activity
             android:name=".WishlistActivity"
@@ -39,7 +40,7 @@
         <activity
             android:name=".NearbyProducts"
             android:label="@string/label_nearby_products"
-            android:launchMode="singleTask"
+            android:launchMode="standard"
             android:parentActivityName=".MainActivity" />
         <activity
             android:name=".MyOffers"

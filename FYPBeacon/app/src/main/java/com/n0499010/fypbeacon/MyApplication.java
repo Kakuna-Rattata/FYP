@@ -156,7 +156,9 @@ public class MyApplication extends Application {
                                 overviewIntent.putExtra("beaconKey", beaconKey);
 
                                 //  If app open in foreground, but not on Overview, launch new Overview Activity on top :
-                                if (getActivity() != null && getActivity().getClass() != OverviewActivity.class) {
+                                if (getActivity() != null
+                                        && getActivity().getClass() != OverviewActivity.class
+                                        && getActivity().getClass() != NearbyProducts.class) {
 
                                     startActivity(overviewIntent);
 

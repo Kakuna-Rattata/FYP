@@ -1,8 +1,10 @@
 package com.n0499010.fypbeacon;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MenuItem;
@@ -264,7 +266,6 @@ public class OverviewActivity extends AppCompatActivity {
         for (Float rating : ratings) {
             result += rating;
         }
-
         result /= ratings.size();
 
         return result;
@@ -275,31 +276,35 @@ public class OverviewActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         if (id == android.R.id.home) {
-            finish();
+            NavUtils.navigateUpFromSameTask(this);
             return true;
         }
-
         return super.onOptionsItemSelected(item);
     }
 
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        finish();
+        NavUtils.navigateUpFromSameTask(this);
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
         Bundle extras = getIntent().getExtras();
         outState.putAll(extras);
-
         super.onSaveInstanceState(outState);
     }
 
     @Override
     public void onRestoreInstanceState(Bundle savedInstanceState, PersistableBundle persistentState) {
         super.onRestoreInstanceState(savedInstanceState, persistentState);
-
         beaconKey = savedInstanceState.getString("beaconKey");
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        finish();
+        startActivity(intent);
     }
 }
