@@ -376,7 +376,7 @@ public class MyApplication extends Application {
 
                                 final Intent myOffersIntent = new Intent(getApplicationContext(), MyOffers.class);
                                 Global.showNotification(
-                                        "New personal offer! " + dataSnapshot.getKey(),
+                                        "New personal offer! " + offID,
                                         "Tap to view your offers",
                                         myOffersIntent,
                                         getApplicationContext(),

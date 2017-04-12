@@ -1,20 +1,28 @@
 package com.n0499010.fypbeacon;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
+import android.text.InputType;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ListAdapter;
+import android.widget.ListView;
 import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.firebase.ui.database.FirebaseListAdapter;
 import com.firebase.ui.storage.images.FirebaseImageLoader;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -45,6 +53,7 @@ public class OverviewActivity extends AppCompatActivity {
     private FloatingActionButton fabWishlist;
     private FloatingActionButton fabComment;
     private RatingBar ratingBar;
+    private ListView listViewComments;
 
     String beaconKey;
     Bundle extras;
@@ -65,6 +74,9 @@ public class OverviewActivity extends AppCompatActivity {
         fabWishlist = (FloatingActionButton) findViewById(R.id.fab_wishlist);
         fabComment = (FloatingActionButton) findViewById(R.id.fab_comment);
         ratingBar = (RatingBar) findViewById(R.id.ratingBar);
+        listViewComments = (ListView) findViewById(R.id.listView_comments);
+        //TODO listView in ScrollView fix
+        setListViewHeightBasedOnChildren(listViewComments);
 
         //  Get beaconKey passed from triggering Intent :
         extras = getIntent().getExtras();
@@ -81,6 +93,7 @@ public class OverviewActivity extends AppCompatActivity {
         final DatabaseReference mUserRef = userRef.child(mUser.getuID());
         final DatabaseReference wishlistRef = mUserRef.child("wishlist");
         final DatabaseReference itemRatingRef = beaconRef.child(beaconKey).child("userRating");
+        final DatabaseReference itemCommentsRef = beaconRef.child(beaconKey).child("userComment");
 
         //  Query database for page content to set UI :
         beaconRef.child(beaconKey).addListenerForSingleValueEvent(new ValueEventListener()
@@ -137,6 +150,24 @@ public class OverviewActivity extends AppCompatActivity {
             }
         });
 
+        final FirebaseListAdapter<String> firebaseListAdapter = new FirebaseListAdapter<String>
+                (this, String.class, R.layout.listview_comment_item, itemCommentsRef) {
+            @Override
+            protected void populateView(View v, String commentValue, int position) {
+
+                final DatabaseReference commentRef = getRef(position);
+                String commentKey = commentRef.getKey();
+
+                TextView name = (TextView) v.findViewById(R.id.labelName);
+                TextView comment = (TextView) v.findViewById(R.id.comment);
+                name.setText(commentKey + ": ");
+                comment.setText(commentValue);
+
+                notifyDataSetChanged();
+            }
+        };
+        listViewComments.setAdapter(firebaseListAdapter);
+
         // Check database, onDataChange lookup item under 'wishlist' ref using title as key
         wishlistRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -183,26 +214,28 @@ public class OverviewActivity extends AppCompatActivity {
         fabComment.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //TODO: Leave item comment
-                // Refer to 'userRating' node under beacon > [beaconkey] node
-                DatabaseReference itemRatingRef = beaconRef.child(beaconKey).child("userRating");
+                AlertDialog.Builder builder = new AlertDialog.Builder(OverviewActivity.this);
+                builder.setTitle(R.string.dialog_comment);
 
-                // Add User DisplayName key and numerical rating as value
-                if (userRating != NULL) {
-                    itemRatingRef.child(mUser.getDisplayName()).setValue(String.valueOf(userRating));
-                }
+                final EditText input = new EditText(getApplicationContext());
+                input.setInputType(InputType.TYPE_CLASS_TEXT);
+                input.setTextColor(getResources().getColor(R.color.colorAccent));
+                builder.setView(input);
 
-                itemRatingRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                builder.setPositiveButton("Post", new DialogInterface.OnClickListener() {
                     @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-
+                    public void onClick(DialogInterface dialog, int which) {
+                        itemCommentsRef.child(mUser.getDisplayName()).setValue(input.getText().toString());
                     }
                 });
+                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
+
+                builder.show();
             }
         });
 
@@ -269,6 +302,29 @@ public class OverviewActivity extends AppCompatActivity {
         result /= ratings.size();
 
         return result;
+    }
+
+    /**** Method for Setting the Height of the ListView dynamically.
+     **** Hack to fix the issue of not showing all the items of the ListView
+     **** when placed inside a ScrollView  ****/
+    public static void setListViewHeightBasedOnChildren(ListView listView) {
+        ListAdapter listAdapter = listView.getAdapter();
+        if (listAdapter == null) {
+            // pre-condition
+            return;
+        }
+
+        int totalHeight = 0;
+        for (int i = 0; i < listAdapter.getCount(); i++) {
+            View listItem = listAdapter.getView(i, null, listView);
+            listItem.measure(0, 0);
+            totalHeight += listItem.getMeasuredHeight();
+        }
+
+        ViewGroup.LayoutParams params = listView.getLayoutParams();
+        params.height = totalHeight + (listView.getDividerHeight() * (listAdapter.getCount() - 1));
+        listView.setLayoutParams(params);
+        listView.requestLayout();
     }
 
     @Override

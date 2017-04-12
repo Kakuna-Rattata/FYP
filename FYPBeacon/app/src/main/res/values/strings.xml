@@ -22,4 +22,5 @@
     <string name="label_leave_feedback">Leave Feedback</string>
     <string name="label_sign_out">Sign Out</string>
     <string name="label_my_account">My Account</string>
+    <string name="dialog_comment">Leave a comment...</string>
 </resources>

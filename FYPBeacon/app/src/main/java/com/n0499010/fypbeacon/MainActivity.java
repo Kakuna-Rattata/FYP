@@ -97,15 +97,13 @@ public class MainActivity extends AppCompatActivity
             if (mFirebaseUser.getPhotoUrl() != null) {
                 mPhotoUrl = mFirebaseUser.getPhotoUrl().toString();
             }
-            preferences.edit().putBoolean("authenticated", true).apply();
-
-            //TODO: Call initialiseApp method
-
-            initialiseAccount(mUid);
+            mUser.setuID(mUid);
+            mUser.setDisplayName(mUsername);
+            mUser.setPhotoUrl(mPhotoUrl);
+            initialiseAccount();
         }
 
         ////////////////////////////////////////////////////////////////////////////////////////////
-
         buttonAccount.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -154,9 +152,7 @@ public class MainActivity extends AppCompatActivity
         // Create offer objects from database
     }
 
-    public void initialiseAccount(String userId) {
-        mUser.setuID(userId);
-
+    public void initialiseAccount() {
         // Read database, lookup Uid to see if already exists :
         userRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override

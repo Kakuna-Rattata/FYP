@@ -13,6 +13,7 @@ public class User implements Serializable {
 
     private String uID;
     private String displayName;
+    private String photoUrl;
 
     private List<String> offerList;
     private ArrayList<Item> wishlist;
@@ -41,6 +42,14 @@ public class User implements Serializable {
 
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
+    }
+
+    public String getPhotoUrl() {
+        return photoUrl;
+    }
+
+    public void setPhotoUrl(String photoUrl) {
+        this.photoUrl = photoUrl;
     }
 
     public void setWishlist(ArrayList<Item> wishlist) {
