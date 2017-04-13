@@ -9,7 +9,6 @@ import com.estimote.sdk.Region;
 public class BeaconData {
 
     private String mmKey;
-
     private Region region;
 
     private String category;
@@ -18,10 +17,20 @@ public class BeaconData {
     private String timeSpent;
 
     private long tStart;
-    private long tEnd;
+    private long elapsedTime;
 
     public BeaconData() {
 
+    }
+
+    public BeaconData(String mmKey, Region region) {
+        this.mmKey = mmKey;
+        this.region = region;
+    }
+
+    public BeaconData(String mmKey, String category) {
+        this.mmKey = mmKey;
+        this.category = category;
     }
 
     public BeaconData(String mmKey) {
@@ -31,12 +40,6 @@ public class BeaconData {
     public String getMmKey() {
         return mmKey;
     }
-
-    public BeaconData(String mmKey, Region region) {
-        this.mmKey = mmKey;
-        this.region = region;
-    }
-
 
     public void setMmKey(String mmKey) {
         this.mmKey = mmKey;
@@ -74,12 +77,12 @@ public class BeaconData {
         this.tStart = tStart;
     }
 
-    public long gettEnd() {
-        return tEnd;
+    public long getElapsedTime() {
+        return elapsedTime;
     }
 
-    public void settEnd(long tEnd) {
-        this.tEnd = tEnd;
+    public void setElapsedTime(long elapsedTime) {
+        this.elapsedTime = elapsedTime;
     }
 
     public String getCategory() {

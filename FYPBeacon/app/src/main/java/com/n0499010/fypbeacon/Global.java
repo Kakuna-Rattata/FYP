@@ -46,7 +46,6 @@ public class Global {
     public static final String STORAGE_RETAIL = "Retail_images";
 
     public static final DatabaseReference firebaseRootRef = FirebaseDatabase.getInstance().getReferenceFromUrl(FIREBASE_URL);
-    public static final DatabaseReference itemRef = firebaseRootRef.child("item");
     public static final DatabaseReference beaconRef = firebaseRootRef.child("beacon");
     public static final DatabaseReference offersRef = firebaseRootRef.child("offers");
     public static final DatabaseReference userRef = firebaseRootRef.child("user");
@@ -69,6 +68,10 @@ public class Global {
 
     public static Map<String,Offer> offers;
 
+    public static OfferMap mOfferMap = new OfferMap();
+
+    public static Map<String, BeaconData> mBeaconDataMap = new HashMap<String, BeaconData>();
+
     /*  Estimote API :   */
     public static final String appID = "fyp-beacon-app-koo";
     public static final String appToken = "0e25759a226c115f659245992c0b97ee";
@@ -76,9 +79,6 @@ public class Global {
     public static long scanDurInterval = 5000;
     public static long scanWaitInterval = 3000;
 
-    public static OfferMap mOfferMap = new OfferMap();
-
-    public static Map<String, BeaconData> mBeaconDataMap = new HashMap<String, BeaconData>();
 
     public static final int NOTIFICATION_PRODUCT = 1;
     public static final int NOTIFICATION_OFFER = 2;

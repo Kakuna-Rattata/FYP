@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import static com.n0499010.fypbeacon.Global.firebaseRootRef;
 import static com.n0499010.fypbeacon.Global.getActivity;
@@ -54,6 +55,7 @@ public class MyApplication extends Application {
     private String beaconKey;
 
     private long tStart = 0;
+    private long elapsedNanoSeconds = 0;
     private long tEnd = 0;
     private long exitDelay = 30;
 
@@ -92,7 +94,7 @@ public class MyApplication extends Application {
         preferences.edit().putBoolean("authenticated", false).apply();
 
         final Intent mainIntent = new Intent(getApplicationContext(), MainActivity.class);
-        final Intent nearbyOffersIntent = new Intent(getApplicationContext(), NearbyProducts.class);
+        final Intent nearbyOffersIntent = new Intent(getApplicationContext(), NearbyProductsActivity.class);
 
         /* Estimote SDK Initialization : */
         EstimoteSDK.initialize(getApplicationContext(), Global.appID, Global.appToken);
@@ -142,7 +144,7 @@ public class MyApplication extends Application {
                                 );
                             } else {
                                 // Note time when region entered
-                                tStart = System.currentTimeMillis();
+                                tStart = System.nanoTime();
                                 BeaconData beaconData = new BeaconData(beaconKey, region);
                                 beaconData.settStart(tStart);
                                 mBeaconDataMap.put(beaconData.getMmKey(), beaconData);
@@ -155,7 +157,7 @@ public class MyApplication extends Application {
                                 //  If app open in foreground, but not on Overview, launch new Overview Activity on top :
                                 if (getActivity() != null
                                         && getActivity().getClass() != OverviewActivity.class
-                                        && getActivity().getClass() != NearbyProducts.class) {
+                                        && getActivity().getClass() != NearbyProductsActivity.class) {
 
                                     startActivity(overviewIntent);
 
@@ -185,15 +187,11 @@ public class MyApplication extends Application {
                                 );
                             } else {
                                 // get duration of visit
-                                tEnd = System.currentTimeMillis();
-
                                 beaconKey = String.format("%d:%d", region.getMajor(), region.getMinor());
                                 BeaconData beaconData = mBeaconDataMap.get(beaconKey);
-                                try {
-                                    beaconData.settEnd(tEnd);
-                                } catch (Exception exception) {
-                                    //TODO: exception handling
-                                }
+
+                                elapsedNanoSeconds = System.nanoTime() - tStart;
+                                beaconData.setElapsedTime(elapsedNanoSeconds);
                                 // Record user's beacon visit in database :
                                 recordBeaconVisit(beaconKey);
                             }
@@ -248,32 +246,24 @@ public class MyApplication extends Application {
     }
 
     private Map<String, String> updateTimeSpent(String key, Map<String, String> dataset, DataSnapshot dataSnapshot) {
-
         String timeSpent = dataset.get("timeSpent");
-
+        // Get timespent from database
         dataSnapshot = dataSnapshot.child("beaconVisited").child(key).child("timeSpent");
         if (dataSnapshot.getValue() != null) {
             timeSpent = dataSnapshot.getValue().toString();
         }
         dataset.put("timeSpent", timeSpent);
 
-        double timeDouble = Double.parseDouble(timeSpent);
+        long timeSpentLong = Long.parseLong(timeSpent);
+        //double timeDouble = Double.parseDouble(timeSpent);
 
-        BeaconData beaconData = mBeaconDataMap.get(key);
-
-        long tDelta = 0;
         // Calculate elapsed time :
-        try {
-            tDelta = beaconData.gettEnd() - beaconData.gettStart();
-        } catch (Exception exception) {
-            //TODO: exception handling
-        }
-        double elapsedSeconds = tDelta / 1000.0;
-
+        BeaconData beaconData = mBeaconDataMap.get(key);
+        //long tDeltatSeconds = (tDelta / 1000);
+        long tDeltatSeconds = TimeUnit.NANOSECONDS.toSeconds(beaconData.getElapsedTime());
         // Estimote beacons have a built in delay of 30 seconds for exit events, subtract to get actual duration
-        elapsedSeconds -= exitDelay;
-
-        int cumulativeTime = (int) (timeDouble + elapsedSeconds);
+        tDeltatSeconds -= exitDelay;
+        long cumulativeTime = (timeSpentLong + tDeltatSeconds);
 
         String updatedTimeSpent = String.valueOf(cumulativeTime);
 
@@ -297,38 +287,36 @@ public class MyApplication extends Application {
                     // For each user beaconVisited data entry
                     if (dataSnapshot.hasChild(userEntry.getKey())) {
                         DataSnapshot ref = dataSnapshot.child(userEntry.getKey());
+
                         for (DataSnapshot child : ref.getChildren()) {
                             if (child.getValue().equals(userEntry.getValue())) {
-                                // visit value meets criteria value, update users offers
-
+                                // visit value meets criteria value, update users offers :
                                 // get category using beacon key
                                 BeaconData beaconData = mBeaconDataMap.get(bKey);
                                 String cat = beaconData.getCategory();
+                                if ( cat != null ) {
+                                    // create offerID using 'OF_' prefix
+                                    String offID = "OF_" + cat;
+                                    // get user's current offer list
+                                    List<String> offList = mUser.getOfferList();
+                                    // append to
+                                    offList.add(offID);
+                                    // set updated offer list
+                                    mUser.setOfferList(offList);
 
-                                // create offerID using 'OF_' prefix
-                                String offID = "OF_" + cat;
+                                    // write offer list to db
+                                    DatabaseReference userOffersRef = userRef.child(mUser.getuID()).child("offers");
+                                    userOffersRef.child(offID).setValue("true");
 
-                                // get user's current offer list
-                                List<String> offList = mUser.getOfferList();
-
-                                // append to
-                                offList.add(offID);
-
-                                // set updated offer list
-                                mUser.setOfferList(offList);
-
-                                // write offer list to db
-                                DatabaseReference userOffersRef = userRef.child(mUser.getuID()).child("offers");
-                                userOffersRef.child(offID).setValue("true");
-
-                                final Intent myOffersIntent = new Intent(getApplicationContext(), MyOffers.class);
-                                Global.showNotification(
-                                        "New personal offer! " + offID,
-                                        "Tap to view your offers",
-                                        myOffersIntent,
-                                        getApplicationContext(),
-                                        Global.NOTIFICATION_OFFER
-                                );
+                                    final Intent myOffersIntent = new Intent(getApplicationContext(), MyOffersActivity.class);
+                                    Global.showNotification(
+                                            "New personal offer! " + offID,
+                                            "Tap to view your offers",
+                                            myOffersIntent,
+                                            getApplicationContext(),
+                                            Global.NOTIFICATION_OFFER
+                                    );
+                                }
                             }
                         }
                     }

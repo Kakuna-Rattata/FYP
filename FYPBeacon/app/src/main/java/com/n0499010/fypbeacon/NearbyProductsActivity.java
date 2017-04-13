@@ -4,9 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.View;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -14,7 +12,9 @@ import com.estimote.sdk.Beacon;
 import com.estimote.sdk.BeaconManager;
 import com.estimote.sdk.Region;
 import com.estimote.sdk.SystemRequirementsChecker;
-import com.firebase.ui.database.FirebaseListAdapter;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,106 +22,87 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.n0499010.fypbeacon.Global.itemRef;
+import static com.n0499010.fypbeacon.Global.beaconRef;
 import static com.n0499010.fypbeacon.Global.mFirebaseAuth;
 import static com.n0499010.fypbeacon.MyApplication.regionAll;
 
-public class NearbyProducts extends AppCompatActivity {
+public class NearbyProductsActivity extends AppCompatActivity {
 
     private ListView mListView;
-    private Button button;
+    private TextView textViewMsg;
 
     public static BeaconManager beaconManager;
 
-    private static final Map<String, List<String>> PLACES_BY_BEACONS;
-
-    //TODO: query db - get data and map beaconMM to list of items
+    private static Map<String, List<String>> PLACES_BY_BEACONS = new HashMap<>();
     private static ArrayList<String> itemArrayList = new ArrayList<String>();
     /* List nested inside a map. The map maps beacon’s <major>:<minor> string) to
      * the list of names of items, pre-sorted by starting with the nearest ones. */
-    static {
-        Map<String, List<String>> itemsByBeacons = new HashMap<>();
-        itemsByBeacons.put("18129:1432", new ArrayList<String>() {{
-            // "Black Boots") is closest to the beacon with major 18129 and minor 1432 (beetroot)
-            add("Black Boots");
-            // "Pretty Bangle" is the next closest
-            add("Pretty Bangle");
-            // "Pastel Heels" is the furthest away
-            add("Pastel Heels");
-        }});
-        itemsByBeacons.put("28651:37405", new ArrayList<String>() {{
-            add("Pretty Bangle");
-            add("Pastel Heels");
-            add("Black Boots");
-        }});
-        itemsByBeacons.put("17236:25458", new ArrayList<String>() {{
-            add("Pastel Heels");
-            add("Pretty Bangle");
-            add("Black Boots");
-        }});
-        PLACES_BY_BEACONS = Collections.unmodifiableMap(itemsByBeacons);
-    }
+    private static Map<String, List<String>> itemsByBeacons = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_nearby_products);
 
+        // Only allow user access if authenticated
         if (mFirebaseAuth.getCurrentUser() == null) {
             startActivity(new Intent(this, SignInActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
             finish();
         } else {
+            mListView   = (ListView) findViewById(R.id.listView_items);
+            textViewMsg = (TextView) findViewById(R.id.textView_nearbyMsg);
 
-            mListView = (ListView) findViewById(R.id.listView_items);
-            button = (Button) findViewById(R.id.btn);
-
-            button.setOnClickListener(new View.OnClickListener() {
+            beaconRef.addValueEventListener(new ValueEventListener() {
                 @Override
-                public void onClick(View v) {
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    // For each beacon
+                    for (DataSnapshot child : dataSnapshot.getChildren()) {
+                        // add key and ordered values to itemsByBeacons
+                        final DataSnapshot beaconKeyNode = dataSnapshot.child(child.getKey());
+                        itemsByBeacons.put(child.getKey(), new ArrayList<String>() {{
+                            add(beaconKeyNode.child("1").getValue().toString());
+                            add(beaconKeyNode.child("2").getValue().toString());
+                            add(beaconKeyNode.child("3").getValue().toString());
+                        }});
+                        PLACES_BY_BEACONS = Collections.unmodifiableMap(itemsByBeacons);
+                    }
+                }
 
-                    Intent intent = new Intent(getApplicationContext(), ItemListActivity.class);
-                    startActivity(intent);
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
                 }
             });
 
-            FirebaseListAdapter<String> firebaseListAdapter = new FirebaseListAdapter<String>(
-                    this,
-                    String.class,
-                    android.R.layout.simple_list_item_1,
-                    itemRef
-            ) {
-                @Override
-                protected void populateView(View v, String model, int position) {
-
-                    TextView textView = (TextView) v.findViewById(android.R.id.text1);
-                    textView.setText(model);
-                }
-            };
-            mListView.setAdapter(firebaseListAdapter);
+            textViewMsg.setText("");
+            final ArrayAdapter arrayAdapter = new ArrayAdapter<String>(this, R.layout.activity_listview, itemArrayList);
+            mListView.setAdapter(arrayAdapter);
 
             beaconManager = new BeaconManager(getApplicationContext());
-
-            final ArrayAdapter adapter = new ArrayAdapter<String>(this, R.layout.activity_listview, itemArrayList);
-            mListView.setAdapter(adapter);
-
             beaconManager.setRangingListener(new BeaconManager.RangingListener() {
                 @Override
                 public void onBeaconsDiscovered(Region region, List<Beacon> list) {
 
                     if (!list.isEmpty()) {
-
                         Beacon nearestBeacon = list.get(0);     // List already ordered nearest first
                         List<String> places = Global.itemsNearBeacon(nearestBeacon, PLACES_BY_BEACONS);
-
                         Log.d("Store", "Nearest places: " + places);
 
                         // Update UI:
-                        adapter.clear();
-                        adapter.addAll(places);
-                        adapter.notifyDataSetChanged();
+                        arrayAdapter.clear();
+                        arrayAdapter.addAll(places);
+                        arrayAdapter.notifyDataSetChanged();
+                        textViewMsg.setText("");
                     }
                 }
             });
+
+            if (arrayAdapter.isEmpty()) {
+                textViewMsg.setText("No detectable products nearby." +
+                        "\n\nKeep browsing around store - you might discover something!");
+            } else {
+                textViewMsg.setText("");
+            }
         }
     }
 

@@ -24,10 +24,6 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ItemListActivity"
-            android:launchMode="standard"
-            android:parentActivityName=".MainActivity" />
-        <activity
             android:name=".OverviewActivity"
             android:launchMode="singleTask"
             android:parentActivityName=".MainActivity" />
@@ -38,12 +34,12 @@
             android:launchMode="singleTask"
             android:parentActivityName=".MainActivity" />
         <activity
-            android:name=".NearbyProducts"
+            android:name=".NearbyProductsActivity"
             android:label="@string/label_nearby_products"
             android:launchMode="standard"
             android:parentActivityName=".MainActivity" />
         <activity
-            android:name=".MyOffers"
+            android:name=".MyOffersActivity"
             android:label="@string/label_my_offers"
             android:launchMode="singleTask"
             android:parentActivityName=".MainActivity" />

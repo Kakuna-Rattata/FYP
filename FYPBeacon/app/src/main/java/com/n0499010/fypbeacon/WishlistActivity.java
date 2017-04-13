@@ -12,23 +12,34 @@ import com.firebase.ui.database.FirebaseListAdapter;
 import com.google.firebase.database.DatabaseReference;
 
 import static com.n0499010.fypbeacon.Global.mUid;
+import static com.n0499010.fypbeacon.Global.mUser;
 import static com.n0499010.fypbeacon.Global.userRef;
 
 public class WishlistActivity extends AppCompatActivity {
 
     private static final String TAG = "WishlistActivity";
     private ListView listViewWishlist;
+    private TextView textViewMsg;
+
+    private TextView value;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_wishlist);
 
-        listViewWishlist = (ListView) findViewById(R.id.listView_wishlist);
+        listViewWishlist    = (ListView) findViewById(R.id.listView_wishlist);
+        textViewMsg         = (TextView) findViewById(R.id.textView_wishlistMsg);
 
         DatabaseReference mUserRef = userRef.child(mUid);
         final DatabaseReference wishlistRef = mUserRef.child("wishlist");
 
+        if (mUser.getWishlist().size() > 0) {
+            userRef.child(mUser.getuID()).child("offers").child("OF_Wishlist").setValue("true");
+            //TODO detect change
+        }
+
+        textViewMsg.setText("");
         final FirebaseListAdapter<String> firebaseListAdapter = new FirebaseListAdapter<String>
                 (this, String.class, R.layout.wishlist_listview_item, wishlistRef) {
             @Override
@@ -37,7 +48,7 @@ public class WishlistActivity extends AppCompatActivity {
                 final DatabaseReference itemRef = getRef(position);
                 String itemKey = itemRef.getKey();
 
-                TextView value = (TextView)v.findViewById(R.id.label);
+                value = (TextView)v.findViewById(R.id.label);
                 value.setText(itemKey + " " + itemValue);
 
                 //Handle buttons and add onClickListeners
@@ -52,8 +63,18 @@ public class WishlistActivity extends AppCompatActivity {
                         notifyDataSetChanged();
                     }
                 });
+
+                textViewMsg.setText("");
             }
         };
         listViewWishlist.setAdapter(firebaseListAdapter);
+
+        if (listViewWishlist.getAdapter().isEmpty()) {
+            textViewMsg.setText("You currently have no products in your wishlist." +
+                                "\n\nTo add a product to your wishlist, discover a nearby product " +
+                                "and tap the star.");
+        } else {
+            textViewMsg.setText("");
+        }
     }
 }

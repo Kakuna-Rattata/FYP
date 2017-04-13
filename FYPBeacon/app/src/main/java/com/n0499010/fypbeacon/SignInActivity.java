@@ -20,8 +20,18 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.ValueEventListener;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.n0499010.fypbeacon.Global.mFirebaseAuth;
+import static com.n0499010.fypbeacon.Global.mUser;
+import static com.n0499010.fypbeacon.Global.userRef;
 
 /**
  * Source code reference: https://firebase.google.com/docs/auth/android/google-signin
@@ -45,6 +55,8 @@ public class SignInActivity extends AppCompatActivity implements
         GoogleApiClient.OnConnectionFailedListener, View.OnClickListener {
 
     private static final String TAG = "SignInActivity";
+    private static final String OFFER_WELCOME = "OF_Welcome";
+    private static final String OFFER_RETURN = "OF_Return";
     private static final int RC_SIGN_IN = 9001;
 
     private SignInButton mSignInButton;
@@ -111,11 +123,56 @@ public class SignInActivity extends AppCompatActivity implements
                             Toast.makeText(SignInActivity.this, "Authentication failed.",
                                     Toast.LENGTH_SHORT).show();
                         } else {
+                            checkForSignInOffer();
                             startActivity(new Intent(SignInActivity.this, MainActivity.class));
                             finish();
                         }
                     }
                 });
+    }
+
+    public void checkForSignInOffer() {
+        // Read database, lookup Uid to see if already exists :
+        userRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.hasChild(mUser.getuID())) {
+                    if (dataSnapshot.child(mUser.getuID()).hasChild("offers")) {
+                        // if Uid and 'offers' nodes already exist, add 'OF_Return' offer:
+                        // add as key under user's 'offer's node, set value to 'true'
+                        Map<String, String> userData = new HashMap<String, String>();
+                        userData.put(OFFER_RETURN, "true");
+
+                        ArrayList<String> uList = new ArrayList<String>();
+                        uList.add(OFFER_RETURN);
+                        mUser.setOfferList(uList);
+
+                        DatabaseReference mUserRef = userRef;
+                        mUserRef = userRef.child(mUser.getuID()).child("offers");
+                        mUserRef.child(OFFER_RETURN).setValue("true");
+                    }
+                } else {
+                    // if Uid not present, write value to db as new key under 'user' as root node
+                    Map<String,String> userData = new HashMap<String, String>();
+                    userData.put(OFFER_WELCOME, "true");
+
+                    ArrayList<String> uList = new ArrayList<String>();
+                    uList.add(OFFER_WELCOME);
+                    mUser.setOfferList(uList);
+
+                    // Add new UID, under Uid node, add 'offers' node
+                    DatabaseReference mUserRef = userRef.child(mUser.getuID()).child("offers");
+                    // Add new offer under offers node: Key: OF_Welcome, value "true"
+                    mUserRef.setValue(userData);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.w("Failed to read value.", databaseError.toException());
+                //TODO: Database onCancelled error handling
+            }
+        });
     }
 
     @Override

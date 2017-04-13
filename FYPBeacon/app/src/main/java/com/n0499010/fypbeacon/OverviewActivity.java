@@ -120,6 +120,8 @@ public class OverviewActivity extends AppCompatActivity {
                         if (child.getKey().equals("category")) {
                             category = child.getValue().toString();
                             item.setCategory(category);
+                            BeaconData beaconDataObj = new BeaconData(beaconKey, category);
+                            mBeaconDataMap.put(beaconDataObj.getMmKey(), beaconDataObj);
                         }
 
                     }
@@ -183,6 +185,14 @@ public class OverviewActivity extends AppCompatActivity {
                         fabWishlist.setImageResource(android.R.drawable.star_off);
                         inWishlist = false;
                     }
+                }
+
+                if (inWishlist) {
+                    ArrayList<Item> arrayList = mUser.getWishlist();
+                    if ( !(arrayList.contains(item)) ) {
+                        arrayList.add(item);
+                    }
+                    mUser.setWishlist(arrayList);
                 }
             }
 

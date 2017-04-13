@@ -2,6 +2,7 @@ package com.n0499010.fypbeacon;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -20,8 +21,13 @@ public class User implements Serializable {
 
     private Map<String, String> beaconsVisited;
 
-    public User() {
+//    public User() {
+//
+//    }
 
+    public User() {
+        wishlist = new ArrayList<>();
+        beaconsVisited = new HashMap<>();
     }
 
     public User(String uID) {
@@ -50,6 +56,10 @@ public class User implements Serializable {
 
     public void setPhotoUrl(String photoUrl) {
         this.photoUrl = photoUrl;
+    }
+
+    public ArrayList<Item> getWishlist() {
+        return wishlist;
     }
 
     public void setWishlist(ArrayList<Item> wishlist) {
