@@ -1,9 +1,7 @@
 package com.n0499010.fypbeacon;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -44,13 +42,14 @@ import static com.n0499010.fypbeacon.Global.userRef;
  */
 public class MainActivity extends AppCompatActivity
         implements GoogleApiClient.OnConnectionFailedListener {
+    private static final String TAG = "MainActivity";
 
-    SharedPreferences preferences;
+    private static final String OFFER_WELCOME = "OF_Welcome";
+    private static final String OFFER_RETURN = "OF_Return";
 
     Intent myOffersIntent;
 
     /* Layout Elements */
-    private Button buttonAccount;
     private Button buttonWishlist;
     private Button buttonNearbyOffers;
     private Button buttonMyOffers;
@@ -65,11 +64,9 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        preferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         myOffersIntent = new Intent(this, MyOffers.class);
 
-        buttonAccount = (Button) findViewById(R.id.button_account);
         buttonWishlist = (Button) findViewById(R.id.button_wishlist);
         buttonNearbyOffers = (Button) findViewById(R.id.button_nearby_offers);
         buttonMyOffers = (Button) findViewById(R.id.button_my_offers);
@@ -104,13 +101,6 @@ public class MainActivity extends AppCompatActivity
         }
 
         ////////////////////////////////////////////////////////////////////////////////////////////
-        buttonAccount.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //TODO: Account overview page
-            }
-        });
-
         buttonWishlist.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -147,11 +137,6 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
-    public void initialiseApp() {
-        //TODO: initApp method
-        // Create offer objects from database
-    }
-
     public void initialiseAccount() {
         // Read database, lookup Uid to see if already exists :
         userRef.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -162,24 +147,23 @@ public class MainActivity extends AppCompatActivity
                         // if Uid and 'offers' nodes already exist, add 'OF_Return' offer:
                         // add as key under user's 'offer's node, set value to 'true'
                         Map<String, String> userData = new HashMap<String, String>();
-                        userData.put("OF_Return", "true");
+                        userData.put(OFFER_RETURN, "true");
 
                         ArrayList<String> uList = new ArrayList<String>();
-                        uList.add("OF_Return");
+                        uList.add(OFFER_RETURN);
                         mUser.setOfferList(uList);
 
                         DatabaseReference mUserRef = userRef;
                         mUserRef = userRef.child(mUser.getuID()).child("offers");
-                        mUserRef.child("OF_Return").setValue("true");
+                        mUserRef.child(OFFER_RETURN).setValue("true");
                     }
                 } else {
                     // if Uid not present, write value to db as new key under 'user' as root node
                     Map<String,String> userData = new HashMap<String, String>();
-                    //TODO: get offers from database, save to global offer list on sign-in
-                    userData.put("OF_Welcome", "true");
+                    userData.put(OFFER_WELCOME, "true");
 
                     ArrayList<String> uList = new ArrayList<String>();
-                    uList.add("OF_Welcome");
+                    uList.add(OFFER_WELCOME);
                     mUser.setOfferList(uList);
 
                     DatabaseReference mUserRef = userRef;
@@ -192,8 +176,18 @@ public class MainActivity extends AppCompatActivity
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
+                Log.w("Failed to read value.", databaseError.toException());
+                //TODO: Database onCancelled error handling
             }
         });
+    }
+
+    public void signOut() {
+        mFirebaseAuth.signOut();
+        Auth.GoogleSignInApi.signOut(mGoogleApiClient);
+
+        mUsername = ANONYMOUS;
+        startActivity(new Intent(getApplicationContext(), SignInActivity.class));
     }
 
     @Override
@@ -214,27 +208,17 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    public void signOut() {
-        mFirebaseAuth.signOut();
-        Auth.GoogleSignInApi.signOut(mGoogleApiClient);
-
-        preferences.edit().putBoolean("authenticated", false).apply();
-        mUsername = ANONYMOUS;
-        startActivity(new Intent(getApplicationContext(), SignInActivity.class));
-    }
-
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         // An unresolvable error has occurred and Google APIs (including Sign-In) will not
         // be available.
-        Log.d("MainActivity", "onConnectionFailed:" + connectionResult);
-        Toast.makeText(this, "Google Play Services error.", Toast.LENGTH_SHORT).show();
+        Log.d(TAG, "onConnectionFailed:" + connectionResult);
+        Toast.makeText(this, R.string.google_play_services_error, Toast.LENGTH_SHORT).show();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-
         SystemRequirementsChecker.checkWithDefaultDialogs(this);
     }
 }

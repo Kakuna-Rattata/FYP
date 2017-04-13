@@ -46,7 +46,6 @@ public class WishlistActivity extends AppCompatActivity {
                 buttonRemove.setOnClickListener(new View.OnClickListener(){
                     @Override
                     public void onClick(View v) {
-
                         itemRef.removeValue();
 
                         Toast.makeText(getApplicationContext(), R.string.toast_text_wishlist_remove, Toast.LENGTH_SHORT).show();

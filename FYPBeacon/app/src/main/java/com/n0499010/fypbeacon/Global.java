@@ -40,9 +40,7 @@ import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 
 public class Global {
 
-    /*  App Values for Global Access :  */
-    //private static final String TAG = getActivity().toString();
-
+    /**  App Values for Global Access :  **/
     /*  Firebase Database : */
     public static final String FIREBASE_URL = "https://beacon-fyp-project.firebaseio.com/";
     public static final String STORAGE_RETAIL = "Retail_images";
@@ -57,19 +55,19 @@ public class Global {
 //    public static final StorageReference imageRootRef = storageInstance.getReference();
 //    public static final StorageReference retailImageRef = imageRootRef.child("Retail_images");
 
+    public static GoogleApiClient mGoogleApiClient;
+
     public static FirebaseAuth mFirebaseAuth;
     public static FirebaseUser mFirebaseUser;
-
-    public static GoogleApiClient mGoogleApiClient;
 
     public static String mUid;
     public static String mUsername;
     public static final String ANONYMOUS = "anonymous";
     public static String mPhotoUrl;
 
-    public static Map<String,Offer> offers;
-
     public static User mUser = new User();
+
+    public static Map<String,Offer> offers;
 
     /*  Estimote API :   */
     public static final String appID = "fyp-beacon-app-koo";
@@ -113,7 +111,6 @@ public class Global {
     /* takes a Beacon object representing the closest beacon,
      * return a list of all the objects sorted by their distance to the beacon */
     public static List<String> itemsNearBeacon(Beacon beacon, Map<String, List<String>> stringListMap) {
-
         String beaconKey = String.format("%d:%d", beacon.getMajor(), beacon.getMinor());
 
         if (stringListMap.containsKey(beaconKey)) {
@@ -219,7 +216,6 @@ public class Global {
                 e.printStackTrace();
             }
         }
-
         return null;
     }
 }

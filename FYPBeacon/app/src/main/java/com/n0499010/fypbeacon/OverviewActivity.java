@@ -12,11 +12,8 @@ import android.text.InputType;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.ListAdapter;
-import android.widget.ListView;
 import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -40,7 +37,7 @@ import static com.n0499010.fypbeacon.Global.userRef;
 import static java.sql.Types.NULL;
 //import static com.n0499010.fypbeacon.Global.retailImageRef;
 
-/**
+/*
  * Created by Shannon Hibbett (N0499010) on 29/03/2017.
  */
 
@@ -53,7 +50,7 @@ public class OverviewActivity extends AppCompatActivity {
     private FloatingActionButton fabWishlist;
     private FloatingActionButton fabComment;
     private RatingBar ratingBar;
-    private ListView listViewComments;
+    private NonScrollListView listViewComments;
 
     String beaconKey;
     Bundle extras;
@@ -74,9 +71,7 @@ public class OverviewActivity extends AppCompatActivity {
         fabWishlist = (FloatingActionButton) findViewById(R.id.fab_wishlist);
         fabComment = (FloatingActionButton) findViewById(R.id.fab_comment);
         ratingBar = (RatingBar) findViewById(R.id.ratingBar);
-        listViewComments = (ListView) findViewById(R.id.listView_comments);
-        //TODO listView in ScrollView fix
-        setListViewHeightBasedOnChildren(listViewComments);
+        listViewComments = (NonScrollListView) findViewById(R.id.listView_nonScroll_comments);
 
         //  Get beaconKey passed from triggering Intent :
         extras = getIntent().getExtras();
@@ -147,6 +142,7 @@ public class OverviewActivity extends AppCompatActivity {
             @Override
             public void onCancelled(DatabaseError databaseError) {
                 Log.w("Failed to read value.", databaseError.toException());
+                //TODO: Database onCancelled error handling
             }
         });
 
@@ -192,7 +188,8 @@ public class OverviewActivity extends AppCompatActivity {
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-
+                Log.w("Failed to read value.", databaseError.toException());
+                //TODO: Database onCancelled error handling
             }
         });
 
@@ -202,7 +199,6 @@ public class OverviewActivity extends AppCompatActivity {
 
                 if (fromUser) {
                     userRating = rating;
-
                     // Add User DisplayName key and numerical rating as value
                     if (userRating != NULL) {
                         itemRatingRef.child(mUser.getuID()).setValue(String.valueOf(userRating));
@@ -288,7 +284,8 @@ public class OverviewActivity extends AppCompatActivity {
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-
+                Log.w("Failed to read value.", databaseError.toException());
+                //TODO: Database onCancelled error handling
             }
         });
     }
@@ -302,29 +299,6 @@ public class OverviewActivity extends AppCompatActivity {
         result /= ratings.size();
 
         return result;
-    }
-
-    /**** Method for Setting the Height of the ListView dynamically.
-     **** Hack to fix the issue of not showing all the items of the ListView
-     **** when placed inside a ScrollView  ****/
-    public static void setListViewHeightBasedOnChildren(ListView listView) {
-        ListAdapter listAdapter = listView.getAdapter();
-        if (listAdapter == null) {
-            // pre-condition
-            return;
-        }
-
-        int totalHeight = 0;
-        for (int i = 0; i < listAdapter.getCount(); i++) {
-            View listItem = listAdapter.getView(i, null, listView);
-            listItem.measure(0, 0);
-            totalHeight += listItem.getMeasuredHeight();
-        }
-
-        ViewGroup.LayoutParams params = listView.getLayoutParams();
-        params.height = totalHeight + (listView.getDividerHeight() * (listAdapter.getCount() - 1));
-        listView.setLayoutParams(params);
-        listView.requestLayout();
     }
 
     @Override

@@ -28,7 +28,6 @@ import static com.n0499010.fypbeacon.MyApplication.regionAll;
 
 public class NearbyProducts extends AppCompatActivity {
 
-    //  Declare UI elements :
     private ListView mListView;
     private Button button;
 
@@ -66,7 +65,7 @@ public class NearbyProducts extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_nearby_offers);
+        setContentView(R.layout.activity_nearby_products);
 
         if (mFirebaseAuth.getCurrentUser() == null) {
             startActivity(new Intent(this, SignInActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
@@ -129,7 +128,6 @@ public class NearbyProducts extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-
         /* The checkWithDefaultDialogs Helper method will use default system dialogs
         to turn Bluetooth or Location on, ask for ACCESS_COARSE_LOCATION permission. */
         SystemRequirementsChecker.checkWithDefaultDialogs(this);
@@ -145,37 +143,12 @@ public class NearbyProducts extends AppCompatActivity {
     @Override
     protected void onPause() {
         beaconManager.stopRanging(regionAll);
-
         super.onPause();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
         beaconManager.disconnect();
     }
-
-//    @Override
-//    public boolean onCreateOptionsMenu(Menu menu) {
-//        // Inflate the menu; this adds items to the action bar if it is present.
-//        getMenuInflater().inflate(R.menu.main_menu, menu);
-//        return true;
-//    }
-//
-//    @Override
-//    public boolean onOptionsItemSelected(MenuItem item) {
-//        switch (item.getItemId()) {
-//            case R.id.sign_out_menu:
-//                mFirebaseAuth.signOut();
-//                Auth.GoogleSignInApi.signOut(mGoogleApiClient);
-//                mUsername = ANONYMOUS;
-//
-//                startActivity(new Intent(this, SignInActivity.class));
-//
-//                return true;
-//            default:
-//                return super.onOptionsItemSelected(item);
-//        }
-//    }
 }

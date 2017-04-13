@@ -30,7 +30,6 @@ import static com.n0499010.fypbeacon.Global.mBeaconDataMap;
 import static com.n0499010.fypbeacon.Global.mFirebaseAuth;
 import static com.n0499010.fypbeacon.Global.mFirebaseUser;
 import static com.n0499010.fypbeacon.Global.mOfferMap;
-import static com.n0499010.fypbeacon.Global.mUid;
 import static com.n0499010.fypbeacon.Global.mUser;
 import static com.n0499010.fypbeacon.Global.notifyIntent;
 import static com.n0499010.fypbeacon.Global.offersRef;
@@ -77,8 +76,6 @@ public class MyApplication extends Application {
             "Candy beacon",
             UUID.fromString("B9407F30-F5F8-466E-AFF9-25556B57FE6D"),
             17236, 25458);
-
-    //Map<String, BeaconData> beaconDataMap = new HashMap<String, BeaconData>();
 
     @Override
     public void onCreate() {
@@ -137,11 +134,11 @@ public class MyApplication extends Application {
                             if (region == regionAll) {
                                 // Display welcome notiiication when discovering any beacon :
                                 Global.showNotification(
-                                        getString(R.string.notify_welcome),             // Title
-                                        getString(R.string.notify_welcome_content),     // Message
-                                        nearbyOffersIntent,                             // Notification Intent
-                                        getApplicationContext(),                        // Context
-                                        Global.NOTIFICATION_PRODUCT                     // Notification Type
+                                        getString(R.string.notify_welcome),                             // Title
+                                        getString(R.string.notify_welcome_content), // Message
+                                        nearbyOffersIntent,                                 // Notification Intent
+                                        getApplicationContext(),                            // Context
+                                        Global.NOTIFICATION_PRODUCT                         // Notification Type
                                 );
                             } else {
                                 // Note time when region entered
@@ -195,65 +192,16 @@ public class MyApplication extends Application {
                                 try {
                                     beaconData.settEnd(tEnd);
                                 } catch (Exception exception) {
-                                    //
+                                    //TODO: exception handling
                                 }
-
                                 // Record user's beacon visit in database :
                                 recordBeaconVisit(beaconKey);
                             }
                         }
                     }); //!setMonitoringListener
-
-                    // Listen for change in user's personal offers, notify when new offer received
-                    if (mUid != null) {
-                        //Query userOfferRef = userRef.child(mUid).child("offers").limitToLast(1);
-//                        DatabaseReference userOfferRef = userRef.child(mUid).child("offers");
-//                        userOfferRef.addChildEventListener(new ChildEventListener() {
-//                            @Override
-//                            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-//                                // Notify user of new offer
-//                                //if ( s != null ) {
-//                                    List<String> offerList = mUser.getOfferList();
-//                                    for (String userOffer : offerList) {
-//                                        if (userOffer.equals(dataSnapshot.getKey())) {
-//                                            Global.showNotification(
-//                                                    "New personal offer! " + dataSnapshot.getKey(),
-//                                                    "Tap to view your offers",
-//                                                    myOffersIntent,
-//                                                    getApplicationContext(),
-//                                                    Global.NOTIFICATION_OFFER
-//                                            );
-//                                        }
-//                                    }
-//
-//                                //}
-//                            }
-//
-//                            @Override
-//                            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-//
-//                            }
-//
-//                            @Override
-//                            public void onChildRemoved(DataSnapshot dataSnapshot) {
-//
-//                            }
-//
-//                            @Override
-//                            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-//
-//                            }
-//
-//                            @Override
-//                            public void onCancelled(DatabaseError databaseError) {
-//
-//                            }
-//                        });
-                    }
                 } else {
                     // User is signed out
                     Log.d(TAG, "onAuthStateChanged:signed_out");
-
                     beaconManager.disconnect();
                 }
             }
@@ -265,7 +213,7 @@ public class MyApplication extends Application {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot child : dataSnapshot.getChildren()) {
-                    if ( !(child.getKey().equals("criteria")) ) {
+                    if (!(child.getKey().equals("criteria"))) {
                         Offer offer = new Offer(child.getKey(), (String) child.getValue());
                         mOfferMap.offerMap.put(child.getKey(), offer);
                     }
@@ -277,7 +225,6 @@ public class MyApplication extends Application {
 
             }
         });
-
     }
 
     /* Get Value from database for provided beacon key, if no value use default */
@@ -346,12 +293,12 @@ public class MyApplication extends Application {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
 
-                for ( Map.Entry<String, String> userEntry : mUser.getBeaconsVisited().entrySet() ) {
+                for (Map.Entry<String, String> userEntry : mUser.getBeaconsVisited().entrySet()) {
                     // For each user beaconVisited data entry
-                    if ( dataSnapshot.hasChild(userEntry.getKey()) ) {
+                    if (dataSnapshot.hasChild(userEntry.getKey())) {
                         DataSnapshot ref = dataSnapshot.child(userEntry.getKey());
                         for (DataSnapshot child : ref.getChildren()) {
-                            if ( child.getValue().equals(userEntry.getValue()) ) {
+                            if (child.getValue().equals(userEntry.getValue())) {
                                 // visit value meets criteria value, update users offers
 
                                 // get category using beacon key
@@ -391,7 +338,8 @@ public class MyApplication extends Application {
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-
+                Log.w("Failed to read value.", databaseError.toException());
+                //TODO: Database onCancelled error handling
             }
         });
     }
@@ -423,7 +371,8 @@ public class MyApplication extends Application {
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-
+                Log.w("Failed to read value.", databaseError.toException());
+                //TODO: Database onCancelled error handling
             }
         });
 

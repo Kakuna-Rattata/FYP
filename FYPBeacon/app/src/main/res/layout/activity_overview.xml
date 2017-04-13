@@ -111,10 +111,11 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="0.6" />
 
-            <ListView
+            <com.n0499010.fypbeacon.NonScrollListView
+                android:id="@+id/listView_nonScroll_comments"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/listView_comments" />
+                android:layout_height="wrap_content" >
+            </com.n0499010.fypbeacon.NonScrollListView>
 
         </LinearLayout>
     </ScrollView>
