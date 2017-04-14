@@ -98,10 +98,7 @@ public class NearbyProductsActivity extends AppCompatActivity {
             });
 
             if (arrayAdapter.isEmpty()) {
-                textViewMsg.setText("No detectable products nearby." +
-                        "\n\nKeep browsing around store - you might discover something!");
-            } else {
-                textViewMsg.setText("");
+                textViewMsg.setText(R.string.nearbyproducts_emptylist_msg);
             }
         }
     }

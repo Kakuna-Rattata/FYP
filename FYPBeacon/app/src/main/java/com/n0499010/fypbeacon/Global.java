@@ -41,18 +41,21 @@ import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 public class Global {
 
     /**  App Values for Global Access :  **/
+    public static final String OFFER_WELCOME        = "OF_Welcome";
+    public static final String OFFER_RETURN         = "OF_Return";
+    public static final String OFFER_WISHLIST       = "OF_Wishlist";
+    public static final String OFFER_FOOTWEAR       = "OF_Footwear";
+    public static final String OFFER_ACCESSORIES    = "OF_Accessories";
+
     /*  Firebase Database : */
     public static final String FIREBASE_URL = "https://beacon-fyp-project.firebaseio.com/";
-    public static final String STORAGE_RETAIL = "Retail_images";
 
-    public static final DatabaseReference firebaseRootRef = FirebaseDatabase.getInstance().getReferenceFromUrl(FIREBASE_URL);
-    public static final DatabaseReference beaconRef = firebaseRootRef.child("beacon");
-    public static final DatabaseReference offersRef = firebaseRootRef.child("offers");
-    public static final DatabaseReference userRef = firebaseRootRef.child("user");
+    public static final DatabaseReference firebaseRootRef   = FirebaseDatabase.getInstance().getReferenceFromUrl(FIREBASE_URL);
+    public static final DatabaseReference beaconRef         = firebaseRootRef.child("beacon");
+    public static final DatabaseReference offersRef         = firebaseRootRef.child("offers");
+    public static final DatabaseReference userRef           = firebaseRootRef.child("user");
 
     public static final FirebaseStorage storageInstance = FirebaseStorage.getInstance();
-//    public static final StorageReference imageRootRef = storageInstance.getReference();
-//    public static final StorageReference retailImageRef = imageRootRef.child("Retail_images");
 
     public static GoogleApiClient mGoogleApiClient;
 

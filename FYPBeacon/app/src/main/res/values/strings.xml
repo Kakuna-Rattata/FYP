@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">FYP Beacon</string>
+    <string name="app_name">Offimity</string>
     <string name="menu_log_out">Log Out</string>
     <string name="menu_sign_out">Sign out</string>
     <string name="wishlist_add">Added to Wishlist</string>
@@ -10,18 +10,23 @@
     <string name="wishlist_remove">Removed from Wishlist</string>
     <string name="send_intent_email_to">n0499010@my.ntu.ac.uk</string>
     <string name="send_intent_email_subject">App Feedback</string>
-    <string name="app_feedback_text">Here is my feedback...</string>
-    <string name="share_chooser_text">Send feedback using...</string>
+    <string name="app_feedback_text">Tell us your thoughts.</string>
+    <string name="share_chooser_text">Send us feedback using...</string>
     <string name="notify_product_nearby">Product Nearby</string>
-    <string name="notify_product_nearby_content">Tap to view</string>
+    <string name="notify_product_nearby_content">Touch to view</string>
     <string name="notify_exit">Thank you for shopping with us</string>
-    <string name="notify_exit_content">Tap to leave feedback</string>
+    <string name="notify_exit_content">Touch to leave feedback</string>
     <string name="notify_welcome">Welcome to the store</string>
-    <string name="notify_welcome_content">Check out the latest app-exlusive instore offers</string>
+    <string name="notify_welcome_content">Discover the latest app-exclusive instore offers</string>
     <string name="label_nearby_products">Nearby Products</string>
-    <string name="label_leave_feedback">Leave Feedback</string>
+    <string name="label_send_feedback">Send Feedback</string>
     <string name="label_sign_out">Sign Out</string>
     <string name="label_my_account">My Account</string>
     <string name="dialog_comment">Leave a comment...</string>
     <string name="google_play_services_error">Google Play Services error.</string>
+    <string name="nearbyproducts_emptylist_msg">No detectable products nearby.\n\nKeep browsing around store - you might discover something!\n\nAlso, make sure your device has Bluetooth turned on.</string>
+    <string name="notification_newoffer_content">Touch to view your offers</string>
+    <string name="notification_newoffer_title">"New personal offer! "</string>
+    <string name="wishlist_emptylist_msg">You currently have no products in your wishlist.\n\nTo add a product to your wishlist, discover a nearby product and tap the star.</string>
+    <string name="myoffers_emptylist_msg">You currently have no offers.\n\nOffers can be obtained by regularly shopping instore while using the app!</string>
 </resources>

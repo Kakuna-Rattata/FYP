@@ -1,6 +1,7 @@
 package com.n0499010.fypbeacon;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -29,6 +30,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.n0499010.fypbeacon.Global.OFFER_RETURN;
+import static com.n0499010.fypbeacon.Global.OFFER_WELCOME;
 import static com.n0499010.fypbeacon.Global.mFirebaseAuth;
 import static com.n0499010.fypbeacon.Global.mUser;
 import static com.n0499010.fypbeacon.Global.userRef;
@@ -53,10 +56,9 @@ import static com.n0499010.fypbeacon.Global.userRef;
 
 public class SignInActivity extends AppCompatActivity implements
         GoogleApiClient.OnConnectionFailedListener, View.OnClickListener {
+    SharedPreferences preferences;
 
     private static final String TAG = "SignInActivity";
-    private static final String OFFER_WELCOME = "OF_Welcome";
-    private static final String OFFER_RETURN = "OF_Return";
     private static final int RC_SIGN_IN = 9001;
 
     private SignInButton mSignInButton;
@@ -136,35 +138,62 @@ public class SignInActivity extends AppCompatActivity implements
         userRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.hasChild(mUser.getuID())) {
+                //if (dataSnapshot.hasChild(mUser.getuID())) {
                     if (dataSnapshot.child(mUser.getuID()).hasChild("offers")) {
-                        // if Uid and 'offers' nodes already exist, add 'OF_Return' offer:
-                        // add as key under user's 'offer's node, set value to 'true'
-                        Map<String, String> userData = new HashMap<String, String>();
-                        userData.put(OFFER_RETURN, "true");
+                        preferences = getSharedPreferences(mUser.getuID(), getApplicationContext().MODE_PRIVATE);
+                        if (preferences.getBoolean(OFFER_RETURN, false) == false) {
+                            // if Uid and 'offers' nodes already exist, add 'OF_Return' offer:
+                            // add as key under user's 'offer's node, set value to 'true'
+                            Map<String, String> userData = new HashMap<String, String>();
+                            userData.put(OFFER_RETURN, "true");
 
-                        ArrayList<String> uList = new ArrayList<String>();
-                        uList.add(OFFER_RETURN);
-                        mUser.setOfferList(uList);
+                            ArrayList<String> uList = new ArrayList<String>();
+                            uList.add(OFFER_RETURN);
+                            mUser.setOfferList(uList);
 
-                        DatabaseReference mUserRef = userRef;
-                        mUserRef = userRef.child(mUser.getuID()).child("offers");
-                        mUserRef.child(OFFER_RETURN).setValue("true");
+                            DatabaseReference mUserRef = userRef;
+                            mUserRef = userRef.child(mUser.getuID()).child("offers");
+                            mUserRef.child(OFFER_RETURN).setValue("true");
+
+                            final Intent myOffersIntent = new Intent(getApplicationContext(), MyOffersActivity.class);
+                            Global.showNotification(
+                                    getString(R.string.notification_newoffer_title) + OFFER_RETURN,
+                                    getString(R.string.notification_newoffer_content),
+                                    myOffersIntent,
+                                    getApplicationContext(),
+                                    Global.NOTIFICATION_OFFER
+                            );
+
+                            preferences.edit().putBoolean(OFFER_RETURN, true).commit();
+                        }
+                    } else {
+                        if (preferences.getBoolean(OFFER_WELCOME, false) == false) {
+                            // if Uid not present, write value to db as new key under 'user' as root node
+                            Map<String, String> userData = new HashMap<String, String>();
+                            userData.put(OFFER_WELCOME, "true");
+
+                            ArrayList<String> uList = new ArrayList<String>();
+                            uList.add(OFFER_WELCOME);
+                            mUser.setOfferList(uList);
+
+                            // Add new UID, under Uid node, add 'offers' node
+                            DatabaseReference mUserRef = userRef.child(mUser.getuID()).child("offers");
+                            // Add new offer under offers node: Key: OF_Welcome, value "true"
+                            mUserRef.setValue(userData);
+
+                            final Intent myOffersIntent = new Intent(getApplicationContext(), MyOffersActivity.class);
+                            Global.showNotification(
+                                    getString(R.string.notification_newoffer_title) + OFFER_WELCOME,
+                                    getString(R.string.notification_newoffer_content),
+                                    myOffersIntent,
+                                    getApplicationContext(),
+                                    Global.NOTIFICATION_OFFER
+                            );
+
+                            preferences.edit().putBoolean(OFFER_WELCOME, true).commit();
+                        }
                     }
-                } else {
-                    // if Uid not present, write value to db as new key under 'user' as root node
-                    Map<String,String> userData = new HashMap<String, String>();
-                    userData.put(OFFER_WELCOME, "true");
-
-                    ArrayList<String> uList = new ArrayList<String>();
-                    uList.add(OFFER_WELCOME);
-                    mUser.setOfferList(uList);
-
-                    // Add new UID, under Uid node, add 'offers' node
-                    DatabaseReference mUserRef = userRef.child(mUser.getuID()).child("offers");
-                    // Add new offer under offers node: Key: OF_Welcome, value "true"
-                    mUserRef.setValue(userData);
-                }
+                //}
             }
 
             @Override

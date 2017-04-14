@@ -3,7 +3,6 @@ package com.n0499010.fypbeacon;
 import android.app.Application;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
@@ -25,6 +24,11 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import static com.n0499010.fypbeacon.Global.OFFER_ACCESSORIES;
+import static com.n0499010.fypbeacon.Global.OFFER_FOOTWEAR;
+import static com.n0499010.fypbeacon.Global.OFFER_RETURN;
+import static com.n0499010.fypbeacon.Global.OFFER_WELCOME;
+import static com.n0499010.fypbeacon.Global.OFFER_WISHLIST;
 import static com.n0499010.fypbeacon.Global.firebaseRootRef;
 import static com.n0499010.fypbeacon.Global.getActivity;
 import static com.n0499010.fypbeacon.Global.mBeaconDataMap;
@@ -82,16 +86,11 @@ public class MyApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        preferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         /*  Firebase database setup : */
         if (!FirebaseApp.getApps(this).isEmpty()) {
             FirebaseDatabase.getInstance().setPersistenceEnabled(true);
         }
-
-        //mSharedPreferences = getSharedPreferences("com.example.shann.galleriesofjustice", MODE_PRIVATE);
-        preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        preferences.edit().putBoolean("authenticated", false).apply();
 
         final Intent mainIntent = new Intent(getApplicationContext(), MainActivity.class);
         final Intent nearbyOffersIntent = new Intent(getApplicationContext(), NearbyProductsActivity.class);
@@ -110,6 +109,43 @@ public class MyApplication extends Application {
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 mFirebaseUser = mFirebaseAuth.getCurrentUser();
                 if (mFirebaseUser != null) {
+                    mUser.setuID(mFirebaseUser.getUid());
+                    preferences = getSharedPreferences(mUser.getuID(), getApplicationContext().MODE_PRIVATE);
+
+                    // check database, if uID exists, set newUser to false :
+                    userRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            if ( dataSnapshot.hasChild(mUser.getuID()) ) {
+                                preferences.edit().putBoolean("newUser", false).commit();
+
+                                // check each child under user's offer node, set SharedPreferences accordingly :
+                                if ( dataSnapshot.child(mUser.getuID()).hasChild("offers") ) {
+                                    for (DataSnapshot child : dataSnapshot.child(mUser.getuID()).child("offers").getChildren()) {
+                                        preferences.edit().putBoolean(child.getKey(), true).commit();
+                                    }
+                                }
+                                // ^allows for portability of account across devices to avoid unecessary New Offer alerts
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+                            Log.w("Failed to read value.", databaseError.toException());
+                            //TODO: Database onCancelled error handling
+                        }
+                    });
+
+                    if (preferences.getBoolean("newUser", true)) {
+                        preferences.edit().putBoolean(OFFER_WISHLIST, false).commit();
+                        preferences.edit().putBoolean(OFFER_RETURN, false).commit();
+                        preferences.edit().putBoolean(OFFER_WELCOME, false).commit();
+                        preferences.edit().putBoolean(OFFER_FOOTWEAR, false).commit();
+                        preferences.edit().putBoolean(OFFER_ACCESSORIES, false).commit();
+
+                        preferences.edit().putBoolean("newUser", false).commit();
+                    }
+
                     // User signed in
                     Log.d(TAG, "onAuthStateChanged:signed_in:" + mFirebaseUser.getUid());
 
@@ -137,7 +173,7 @@ public class MyApplication extends Application {
                                 // Display welcome notiiication when discovering any beacon :
                                 Global.showNotification(
                                         getString(R.string.notify_welcome),                             // Title
-                                        getString(R.string.notify_welcome_content), // Message
+                                        getString(R.string.notify_welcome_content),         // Message
                                         nearbyOffersIntent,                                 // Notification Intent
                                         getApplicationContext(),                            // Context
                                         Global.NOTIFICATION_PRODUCT                         // Notification Type
@@ -197,6 +233,8 @@ public class MyApplication extends Application {
                             }
                         }
                     }); //!setMonitoringListener
+
+                    checkWishlist();
                 } else {
                     // User is signed out
                     Log.d(TAG, "onAuthStateChanged:signed_out");
@@ -262,7 +300,9 @@ public class MyApplication extends Application {
         //long tDeltatSeconds = (tDelta / 1000);
         long tDeltatSeconds = TimeUnit.NANOSECONDS.toSeconds(beaconData.getElapsedTime());
         // Estimote beacons have a built in delay of 30 seconds for exit events, subtract to get actual duration
-        tDeltatSeconds -= exitDelay;
+        if (tDeltatSeconds >= 0) {
+            tDeltatSeconds -= exitDelay;
+        }
         long cumulativeTime = (timeSpentLong + tDeltatSeconds);
 
         String updatedTimeSpent = String.valueOf(cumulativeTime);
@@ -294,7 +334,7 @@ public class MyApplication extends Application {
                                 // get category using beacon key
                                 BeaconData beaconData = mBeaconDataMap.get(bKey);
                                 String cat = beaconData.getCategory();
-                                if ( cat != null ) {
+                                if (cat != null) {
                                     // create offerID using 'OF_' prefix
                                     String offID = "OF_" + cat;
                                     // get user's current offer list
@@ -308,14 +348,18 @@ public class MyApplication extends Application {
                                     DatabaseReference userOffersRef = userRef.child(mUser.getuID()).child("offers");
                                     userOffersRef.child(offID).setValue("true");
 
-                                    final Intent myOffersIntent = new Intent(getApplicationContext(), MyOffersActivity.class);
-                                    Global.showNotification(
-                                            "New personal offer! " + offID,
-                                            "Tap to view your offers",
-                                            myOffersIntent,
-                                            getApplicationContext(),
-                                            Global.NOTIFICATION_OFFER
-                                    );
+                                    if (preferences.getBoolean(offID, false) == false) {
+                                        final Intent myOffersIntent = new Intent(getApplicationContext(), MyOffersActivity.class);
+                                        Global.showNotification(
+                                                getString(R.string.notification_newoffer_title) + offID,
+                                                getString(R.string.notification_newoffer_content),
+                                                myOffersIntent,
+                                                getApplicationContext(),
+                                                Global.NOTIFICATION_OFFER
+                                        );
+
+                                        preferences.edit().putBoolean(offID, true).commit();
+                                    }
                                 }
                             }
                         }
@@ -328,6 +372,38 @@ public class MyApplication extends Application {
             public void onCancelled(DatabaseError databaseError) {
                 Log.w("Failed to read value.", databaseError.toException());
                 //TODO: Database onCancelled error handling
+            }
+        });
+    }
+
+    public void checkWishlist() {
+        final DatabaseReference mUserRef = userRef.child(mUser.getuID());
+        final DatabaseReference userOffersRef = mUserRef.child("offers");
+
+        userOffersRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot child : dataSnapshot.getChildren()) {
+                    if (child.getKey().equals(OFFER_WISHLIST)) {
+                        final Intent myOffersIntent = new Intent(getApplicationContext(), MyOffersActivity.class);
+
+                        if (preferences.getBoolean(OFFER_WISHLIST, false) == false) {
+                            Global.showNotification(
+                                    getString(R.string.notification_newoffer_title) + OFFER_WISHLIST,
+                                    getString(R.string.notification_newoffer_content),
+                                    myOffersIntent,
+                                    getApplicationContext(),
+                                    Global.NOTIFICATION_OFFER
+                            );
+                            preferences.edit().putBoolean(OFFER_WISHLIST, true).commit();
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
             }
         });
     }
@@ -349,7 +425,8 @@ public class MyApplication extends Application {
                 beaconVisitedData.put("noVisits", "0");
                 beaconVisitedData = updateNoVisits(bKey, beaconVisitedData, dataSnapshot);
 
-                beaconVisitedData.put("timeSpent", "0");
+                int delay = (int) exitDelay;
+                beaconVisitedData.put("timeSpent", String.valueOf(delay));
                 beaconVisitedData = updateTimeSpent(bKey, beaconVisitedData, dataSnapshot);
 
                 mBeaconVisitRef.child(bKey).setValue(beaconVisitedData);

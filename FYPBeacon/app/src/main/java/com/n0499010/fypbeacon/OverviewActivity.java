@@ -81,8 +81,8 @@ public class OverviewActivity extends AppCompatActivity {
         Log.d("beaconKey is: ", beaconKey);
 
         final StorageReference imageRootRef = storageInstance.getReference();
-        //final StorageReference retailImageRef = imageRootRef.child(STORAGE_RETAIL);
         final StorageReference retailImageRef = imageRootRef.child("Retail_images");
+
         final Item item = new Item();
 
         final DatabaseReference mUserRef = userRef.child(mUser.getuID());
@@ -172,14 +172,16 @@ public class OverviewActivity extends AppCompatActivity {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if ( !(dataSnapshot.equals(null)) ) {
                     if ( dataSnapshot.hasChildren() ) {
-                        if (dataSnapshot.hasChild(item.getTitle())) {
-                            // item in wishlist
-                            fabWishlist.setImageResource(android.R.drawable.btn_star_big_on);
-                            inWishlist = true;
-                        } else {
-                            // item not in wishlist
-                            fabWishlist.setImageResource(android.R.drawable.star_off);
-                            inWishlist = false;
+                        if (item.equals(null)) {
+                            if (dataSnapshot.hasChild(item.getTitle())) {
+                                // item in wishlist
+                                fabWishlist.setImageResource(android.R.drawable.btn_star_big_on);
+                                inWishlist = true;
+                            } else {
+                                // item not in wishlist
+                                fabWishlist.setImageResource(android.R.drawable.star_off);
+                                inWishlist = false;
+                            }
                         }
                     } else {
                         fabWishlist.setImageResource(android.R.drawable.star_off);
@@ -231,6 +233,7 @@ public class OverviewActivity extends AppCompatActivity {
                 builder.setPositiveButton("Post", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                        
                         itemCommentsRef.child(mUser.getDisplayName()).setValue(input.getText().toString());
                     }
                 });

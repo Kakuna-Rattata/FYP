@@ -74,12 +74,16 @@ public class MyOffersActivity extends AppCompatActivity {
                 }
             });
 
-            if (arrayAdapter.isEmpty()) {
-                textViewMsg.setText("You currently have no offers." +
-                        "\n\nOffers can be obtained by regularly shopping instore while using the app!");
-            } else {
-                textViewMsg.setText("");
+            if (listViewMyOffers.getAdapter().isEmpty()) {
+                textViewMsg.setText(R.string.myoffers_emptylist_msg);
             }
         }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        finish();
+        startActivity(intent);
     }
 }

@@ -34,11 +34,6 @@ public class WishlistActivity extends AppCompatActivity {
         DatabaseReference mUserRef = userRef.child(mUid);
         final DatabaseReference wishlistRef = mUserRef.child("wishlist");
 
-        if (mUser.getWishlist().size() > 0) {
-            userRef.child(mUser.getuID()).child("offers").child("OF_Wishlist").setValue("true");
-            //TODO detect change
-        }
-
         textViewMsg.setText("");
         final FirebaseListAdapter<String> firebaseListAdapter = new FirebaseListAdapter<String>
                 (this, String.class, R.layout.wishlist_listview_item, wishlistRef) {
@@ -50,6 +45,8 @@ public class WishlistActivity extends AppCompatActivity {
 
                 value = (TextView)v.findViewById(R.id.label);
                 value.setText(itemKey + " " + itemValue);
+
+                userRef.child(mUser.getuID()).child("offers").child("OF_Wishlist").setValue("true");
 
                 //Handle buttons and add onClickListeners
                 Button buttonRemove = (Button) v.findViewById(R.id.button_remove);
@@ -70,11 +67,7 @@ public class WishlistActivity extends AppCompatActivity {
         listViewWishlist.setAdapter(firebaseListAdapter);
 
         if (listViewWishlist.getAdapter().isEmpty()) {
-            textViewMsg.setText("You currently have no products in your wishlist." +
-                                "\n\nTo add a product to your wishlist, discover a nearby product " +
-                                "and tap the star.");
-        } else {
-            textViewMsg.setText("");
+            textViewMsg.setText(R.string.wishlist_emptylist_msg);
         }
     }
 }
