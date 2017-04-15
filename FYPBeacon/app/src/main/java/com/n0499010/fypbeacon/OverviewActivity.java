@@ -233,8 +233,13 @@ public class OverviewActivity extends AppCompatActivity {
                 builder.setPositiveButton("Post", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        
-                        itemCommentsRef.child(mUser.getDisplayName()).setValue(input.getText().toString());
+                        if (input.getText().length() <= 0 || input.getText() == null) {
+                            Toast.makeText(getApplicationContext(),
+                                    "Please enter text before pressing 'Post'",
+                                    Toast.LENGTH_LONG).show();
+                        } else {
+                            itemCommentsRef.child(mUser.getDisplayName()).setValue(input.getText().toString());
+                        }
                     }
                 });
                 builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {

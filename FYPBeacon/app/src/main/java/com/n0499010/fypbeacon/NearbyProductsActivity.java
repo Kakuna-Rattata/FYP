@@ -127,6 +127,8 @@ public class NearbyProductsActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        beaconManager.disconnect();
+        if (beaconManager != null) {
+            beaconManager.disconnect();
+        }
     }
 }

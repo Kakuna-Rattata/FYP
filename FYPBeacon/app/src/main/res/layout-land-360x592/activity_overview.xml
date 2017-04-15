@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_overview"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="com.n0499010.fypbeacon.OverviewActivity">
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:maxHeight="400dp"
+            android:id="@+id/imageView_overview"
+            android:layout_weight="1"/>
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1">
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:weightSum="1">
+
+                <Space
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.05" />
+
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <LinearLayout
+                        android:orientation="vertical"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0.9">
+
+                        <TextView
+                            android:layout_width="175dp"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/textView_title"
+                            android:textSize="30sp"
+                            android:text="Pretty Bangle"
+                            android:padding="5dp" />
+
+                        <Space
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="119dp"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/textView_price"
+                        android:textSize="27sp"
+                        android:text="£25.00"
+                        android:textAllCaps="false"
+                        android:padding="5dp" />
+                </LinearLayout>
+
+                <RatingBar
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/ratingBar"
+                    android:numStars="5"
+                    android:rating="5"
+                    android:paddingTop="5dp" />
+
+                <Space
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.04" />
+
+                <ScrollView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.5">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical" >
+
+                        <LinearLayout
+                            android:orientation="horizontal"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_weight="0.5">
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:id="@+id/textView_desc"
+                                android:padding="10dp"
+                                android:textSize="24sp"
+                                android:layout_weight="1" />
+
+                            <Space
+                                android:layout_width="56dp"
+                                android:layout_height="20dp" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </ScrollView>
+
+                <Space
+                    android:layout_width="match_parent"
+                    android:layout_height="16dp" />
+
+                <Space
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.6" />
+
+                <com.n0499010.fypbeacon.NonScrollListView
+                    android:id="@+id/listView_nonScroll_comments"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" >
+                </com.n0499010.fypbeacon.NonScrollListView>
+
+            </LinearLayout>
+        </ScrollView>
+    </LinearLayout>
+
+    <android.support.design.widget.CoordinatorLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true">
+
+        <android.support.design.widget.FloatingActionButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            app:fabSize="normal"
+            app:srcCompat="@drawable/ic_feedback_white_24dp"
+            android:layout_gravity="right|top"
+            android:layout_marginBottom="75dp"
+            app:layout_anchor="@+id/fab_wishlist"
+            app:layout_anchorGravity="top"
+            android:id="@+id/fab_comment" />
+
+        <android.support.design.widget.FloatingActionButton
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:clickable="true"
+            app:fabSize="mini"
+            app:srcCompat="@android:drawable/star_off"
+            android:layout_gravity="right|bottom"
+            android:layout_margin="5dp"
+            android:id="@+id/fab_wishlist" />
+    </android.support.design.widget.CoordinatorLayout>
+
+</RelativeLayout>
