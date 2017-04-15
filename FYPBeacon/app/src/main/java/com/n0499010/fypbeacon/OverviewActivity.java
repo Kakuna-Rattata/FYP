@@ -53,13 +53,14 @@ public class OverviewActivity extends AppCompatActivity {
     private NonScrollListView listViewComments;
 
     String beaconKey;
+    String instanceWishlist = "inWishlist";
     Bundle extras;
 
     Boolean inWishlist = false;
     float userRating = NULL;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_overview);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -72,6 +73,7 @@ public class OverviewActivity extends AppCompatActivity {
         fabComment = (FloatingActionButton) findViewById(R.id.fab_comment);
         ratingBar = (RatingBar) findViewById(R.id.ratingBar);
         listViewComments = (NonScrollListView) findViewById(R.id.listView_nonScroll_comments);
+
 
         //  Get beaconKey passed from triggering Intent :
         extras = getIntent().getExtras();
@@ -172,7 +174,7 @@ public class OverviewActivity extends AppCompatActivity {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if ( !(dataSnapshot.equals(null)) ) {
                     if ( dataSnapshot.hasChildren() ) {
-                        if (item.equals(null)) {
+                        if ( !(item.equals(null))) {
                             if (dataSnapshot.hasChild(item.getTitle())) {
                                 // item in wishlist
                                 fabWishlist.setImageResource(android.R.drawable.btn_star_big_on);
@@ -340,12 +342,17 @@ public class OverviewActivity extends AppCompatActivity {
     public void onSaveInstanceState(Bundle outState) {
         Bundle extras = getIntent().getExtras();
         outState.putAll(extras);
+
+        outState.putBoolean(instanceWishlist, inWishlist);
+
         super.onSaveInstanceState(outState);
     }
 
     @Override
     public void onRestoreInstanceState(Bundle savedInstanceState, PersistableBundle persistentState) {
         super.onRestoreInstanceState(savedInstanceState, persistentState);
+
+        inWishlist = savedInstanceState.getBoolean(instanceWishlist);
         beaconKey = savedInstanceState.getString("beaconKey");
     }
 

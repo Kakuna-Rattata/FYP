@@ -12,6 +12,7 @@
     tools:context="com.n0499010.fypbeacon.OverviewActivity">
 
     <LinearLayout
+        android:focusableInTouchMode="true"
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
