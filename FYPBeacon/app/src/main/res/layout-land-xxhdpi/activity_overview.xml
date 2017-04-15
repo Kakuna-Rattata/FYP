@@ -42,35 +42,31 @@
                 <LinearLayout
                     android:orientation="horizontal"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-
-                    <LinearLayout
-                        android:orientation="vertical"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="0.9">
-
-                        <TextView
-                            android:layout_width="175dp"
-                            android:layout_height="wrap_content"
-                            android:id="@+id/textView_title"
-                            android:textSize="30sp"
-                            android:text="Pretty Bangle"
-                            android:padding="5dp" />
-
-                        <Space
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content" />
-                    </LinearLayout>
+                    android:layout_height="71dp">
 
                     <TextView
-                        android:layout_width="119dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/textView_title"
+                        android:layout_weight="0.9"
+                        android:padding="10dp"
+                        android:text="Product Name"
+                        android:textSize="30sp"
+                        android:textColor="?android:attr/textColorSecondary" />
+
+                    <Space
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0.1" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:id="@+id/textView_price"
-                        android:textSize="27sp"
-                        android:text="£25.00"
-                        android:textAllCaps="false"
-                        android:padding="5dp" />
+                        android:layout_weight="0.6"
+                        android:text="£0.00"
+                        android:textSize="30sp"
+                        android:textStyle="normal|bold" />
                 </LinearLayout>
 
                 <RatingBar
@@ -78,8 +74,7 @@
                     android:layout_height="wrap_content"
                     android:id="@+id/ratingBar"
                     android:numStars="5"
-                    android:rating="5"
-                    android:paddingTop="5dp" />
+                    android:rating="5" />
 
                 <Space
                     android:layout_width="match_parent"
@@ -108,7 +103,9 @@
                                 android:id="@+id/textView_desc"
                                 android:padding="10dp"
                                 android:textSize="24sp"
-                                android:layout_weight="1" />
+                                android:text="Product Description Summary"
+                                android:layout_weight="1"
+                                android:textStyle="normal|italic" />
 
                             <Space
                                 android:layout_width="56dp"

@@ -45,6 +45,7 @@
                     android:id="@+id/textView_title"
                     android:layout_weight="0.9"
                     android:padding="10dp"
+                    android:text="Product Name"
                     android:textSize="30sp" />
 
                 <Space
@@ -57,7 +58,9 @@
                     android:layout_height="wrap_content"
                     android:id="@+id/textView_price"
                     android:layout_weight="0.6"
-                    android:textSize="30sp" />
+                    android:text="£0.00"
+                    android:textSize="30sp"
+                    android:textStyle="normal|bold" />
             </LinearLayout>
 
             <RatingBar
@@ -93,8 +96,10 @@
                             android:layout_height="wrap_content"
                             android:id="@+id/textView_desc"
                             android:padding="10dp"
+                            android:text="Product Description Summary"
                             android:textSize="24sp"
-                            android:layout_weight="1" />
+                            android:layout_weight="1"
+                            android:textStyle="normal|italic" />
 
                         <Space
                             android:layout_width="56dp"

@@ -18,6 +18,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -339,10 +340,18 @@ public class MyApplication extends Application {
                                     String offID = "OF_" + cat;
                                     // get user's current offer list
                                     List<String> offList = mUser.getOfferList();
-                                    // append to
-                                    offList.add(offID);
-                                    // set updated offer list
-                                    mUser.setOfferList(offList);
+
+                                    try {
+                                        if ( offList == null ) {
+                                            offList = new ArrayList<String>();
+                                        }
+                                        offList.add(offID); // append to
+                                        // set updated offer list
+                                        mUser.setOfferList(offList);
+
+                                    } catch (NullPointerException nullPounterException){
+                                        Log.w(nullPounterException.toString(), nullPounterException);
+                                    }
 
                                     // write offer list to db
                                     DatabaseReference userOffersRef = userRef.child(mUser.getuID()).child("offers");
