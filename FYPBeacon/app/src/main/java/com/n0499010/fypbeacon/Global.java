@@ -85,6 +85,7 @@ public class Global {
 
     public static final int NOTIFICATION_PRODUCT = 1;
     public static final int NOTIFICATION_OFFER = 2;
+
     public static Intent notifyIntent;
 
     /*  App Global Access Methods :    */
@@ -102,7 +103,7 @@ public class Global {
                     .setContentText(message)
                     .setAutoCancel(true)
                     .setContentIntent(pendingIntent)
-                    //.setSmallIcon(R.drawable.g_logo)  //TODO: Add app notification icon
+                    .setSmallIcon(R.drawable.ic_launcher)
                     .build();
             notification.defaults |= Notification.DEFAULT_SOUND;
             NotificationManager notificationManager =
@@ -122,7 +123,7 @@ public class Global {
         return Collections.emptyList();
     }
 
-    public static void onShareClick(Context context) {
+    public static Intent onShareChooser(Context context) {
         Resources resources = context.getResources();
 
         Intent emailIntent = new Intent();
@@ -159,6 +160,13 @@ public class Global {
         notifyIntent = openInChooser;
 
         notifyIntent.setFlags(FLAG_ACTIVITY_NEW_TASK);
+
+        return openInChooser;
+    }
+
+    public static void onShareClick(Context context) {
+
+        Intent openInChooser = onShareChooser(context);
 
         context.startActivity(openInChooser);
     }

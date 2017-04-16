@@ -174,10 +174,10 @@ public class MyApplication extends Application {
                                 // Display welcome notiiication when discovering any beacon :
                                 Global.showNotification(
                                         getString(R.string.notify_welcome),                             // Title
-                                        getString(R.string.notify_welcome_content),         // Message
+                                        getString(R.string.notify_welcome_content), // Message
                                         nearbyOffersIntent,                                 // Notification Intent
                                         getApplicationContext(),                            // Context
-                                        Global.NOTIFICATION_PRODUCT                         // Notification Type
+                                        Global.NOTIFICATION_PRODUCT                           // Notification Type
                                 );
                             } else {
                                 // Note time when region entered
@@ -215,6 +215,7 @@ public class MyApplication extends Application {
                             Log.d("monitoring: exit", region.toString());
 
                             if (region == regionAll) {
+                                notifyIntent = Global.onShareChooser(getApplicationContext());
                                 Global.showNotification(
                                         getString(R.string.notify_exit),
                                         getString(R.string.notify_exit_content),

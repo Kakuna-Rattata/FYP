@@ -86,7 +86,7 @@ public class NearbyProductsActivity extends AppCompatActivity {
                     if (!list.isEmpty()) {
                         Beacon nearestBeacon = list.get(0);     // List already ordered nearest first
                         List<String> places = Global.itemsNearBeacon(nearestBeacon, PLACES_BY_BEACONS);
-                        Log.d("Store", "Nearest places: " + places);
+                        Log.d("RangingListener", "Nearest places: " + places);
 
                         // Update UI:
                         arrayAdapter.clear();
