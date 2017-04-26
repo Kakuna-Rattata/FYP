@@ -35,7 +35,13 @@ import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
  * Some code developed during previous Mobile Platform Development module assignment has been reused:
  * showNotification method, getActivity method
  *
- * TODO: find & cite getActivity method source, showNotification method
+ * getActivity() method code source :
+ * http://stackoverflow.com/questions/11411395/how-to-get-current-foreground-activity-context-in-android/28423385#28423385
+ *
+ * image used in launcher/notification icon 'ic_launcher' source :
+ *  http://megaicons.net/iconspack-178/5420/
+ *  Website used to generate launcher/notification icon 'ic_launcher' :
+ *  https://romannurik.github.io/AndroidAssetStudio/icons-launcher.html#foreground.type=image&foreground.space.trim=1&foreground.space.pad=0.2&foreColor=rgba(255%2C%20255%2C%20255%2C%200.97)&backColor=rgb(84%2C%20214%2C%20150)&crop=0&backgroundShape=circle&effects=none&name=ic_launcher
  */
 
 public class Global {
