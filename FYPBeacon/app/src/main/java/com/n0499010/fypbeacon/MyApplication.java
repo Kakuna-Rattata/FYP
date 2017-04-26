@@ -295,11 +295,10 @@ public class MyApplication extends Application {
         dataset.put("timeSpent", timeSpent);
 
         long timeSpentLong = Long.parseLong(timeSpent);
-        //double timeDouble = Double.parseDouble(timeSpent);
 
         // Calculate elapsed time :
         BeaconData beaconData = mBeaconDataMap.get(key);
-        //long tDeltatSeconds = (tDelta / 1000);
+
         long tDeltatSeconds = TimeUnit.NANOSECONDS.toSeconds(beaconData.getElapsedTime());
         // Estimote beacons have a built in delay of 30 seconds for exit events, subtract to get actual duration
         if (tDeltatSeconds >= 0) {
@@ -326,10 +325,10 @@ public class MyApplication extends Application {
             public void onDataChange(DataSnapshot dataSnapshot) {
 
                 for (Map.Entry<String, String> userEntry : mUser.getBeaconsVisited().entrySet()) {
-                    // For each user beaconVisited data entry
+                    // For each beaconVisited data entry
                     if (dataSnapshot.hasChild(userEntry.getKey())) {
+                        // Find user in database, go to user's sub-tree
                         DataSnapshot ref = dataSnapshot.child(userEntry.getKey());
-
                         for (DataSnapshot child : ref.getChildren()) {
                             if (child.getValue().equals(userEntry.getValue())) {
                                 // visit value meets criteria value, update users offers :
@@ -353,7 +352,6 @@ public class MyApplication extends Application {
                                     } catch (NullPointerException nullPounterException){
                                         Log.w(nullPounterException.toString(), nullPounterException);
                                     }
-
                                     // write offer list to db
                                     DatabaseReference userOffersRef = userRef.child(mUser.getuID()).child("offers");
                                     userOffersRef.child(offID).setValue("true");
@@ -367,7 +365,6 @@ public class MyApplication extends Application {
                                                 getApplicationContext(),
                                                 Global.NOTIFICATION_OFFER
                                         );
-
                                         preferences.edit().putBoolean(offID, true).commit();
                                     }
                                 }
@@ -375,7 +372,6 @@ public class MyApplication extends Application {
                         }
                     }
                 }
-
             }
 
             @Override
@@ -422,7 +418,6 @@ public class MyApplication extends Application {
         final String bKey = key;
         // Record user's beacon visit in database :
         final DatabaseReference mUserRef = userRef.child(mUser.getuID());
-
         mUserRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {

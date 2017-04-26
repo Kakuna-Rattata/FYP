@@ -60,7 +60,6 @@ public class WishlistActivity extends AppCompatActivity {
                         notifyDataSetChanged();
                     }
                 });
-
                 textViewMsg.setText("");
             }
         };

@@ -21,10 +21,6 @@ public class User implements Serializable {
 
     private Map<String, String> beaconsVisited;
 
-//    public User() {
-//
-//    }
-
     public User() {
         wishlist = new ArrayList<>();
         beaconsVisited = new HashMap<>();
